@@ -65,10 +65,10 @@
 
     <!-- Navigation Tabs for Admin Sections -->
     <div style="display: flex; gap: 10px; margin-bottom: 28px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 14px; flex-wrap: wrap;">
-      <button class="toggle-pill admin-nav-item active" data-target="secSla">⏱️ Bandeja de Aprobación SINPE &amp; SLA</button>
-      <button class="toggle-pill admin-nav-item" data-target="secCalendars">📅 Calendarios Individuales por Sala</button>
-      <button class="toggle-pill admin-nav-item" data-target="secBookings">📋 Gestión de Reservas &amp; Auditoría</button>
-      <button class="toggle-pill admin-nav-item" data-target="secAnalytics">📊 Informes de Demanda &amp; Rentabilidad</button>
+      <button class="toggle-pill admin-nav-item active" data-target="secSla" onclick="switchAdminSection('secSla')">⏱️ Bandeja de Aprobación SINPE &amp; SLA</button>
+      <button class="toggle-pill admin-nav-item" data-target="secCalendars" onclick="switchAdminSection('secCalendars')">📅 Calendarios Individuales por Sala</button>
+      <button class="toggle-pill admin-nav-item" data-target="secBookings" onclick="switchAdminSection('secBookings')">📋 Gestión de Reservas &amp; Auditoría</button>
+      <button class="toggle-pill admin-nav-item" data-target="secAnalytics" onclick="switchAdminSection('secAnalytics')">📊 Informes de Demanda &amp; Rentabilidad</button>
     </div>
 
     <!-- SECTION 1: SLA SINPE APPROVALS QUEUE -->

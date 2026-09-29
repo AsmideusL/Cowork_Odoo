@@ -71,10 +71,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!bellBtn || !dropdown) return;
 
-    bellBtn.onclick = (e) => {
-      e.stopPropagation();
-      dropdown.classList.toggle("open");
-    };
+  window.toggleNotifDropdown = function(e) {
+    if (e) e.stopPropagation();
+    const dropdown = document.getElementById("notifDropdown");
+    if (dropdown) dropdown.classList.toggle("open");
+  };
+
+  bellBtn.onclick = (e) => {
+    window.toggleNotifDropdown(e);
+  };
 
     document.addEventListener("click", (e) => {
       if (!dropdown.contains(e.target) && e.target !== bellBtn) {

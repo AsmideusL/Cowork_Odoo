@@ -23,25 +23,34 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Admin Top Navigation Tabs
+  window.switchAdminSection = function(targetSection) {
+    document.querySelectorAll(".admin-nav-item").forEach(t => {
+      if (t.getAttribute("data-target") === targetSection) t.classList.add("active");
+      else t.classList.remove("active");
+    });
+
+    document.querySelectorAll(".admin-section").forEach(sec => sec.style.display = "none");
+    const activeSec = document.getElementById(targetSection);
+    if (activeSec) activeSec.style.display = "block";
+
+    if (targetSection === "secAnalytics") {
+      initCharts();
+    }
+  };
+
   function setupAdminTabs() {
     const tabs = document.querySelectorAll(".admin-nav-item");
     tabs.forEach(tab => {
       tab.addEventListener("click", () => {
-        tabs.forEach(t => t.classList.remove("active"));
-        tab.classList.add("active");
         const targetSection = tab.getAttribute("data-target");
-
-        document.querySelectorAll(".admin-section").forEach(sec => sec.style.display = "none");
-        const activeSec = document.getElementById(targetSection);
-        if (activeSec) activeSec.style.display = "block";
+        switchAdminSection(targetSection);
       });
     });
 
     // Check hash in URL if provided (e.g. #secSla or #secBookings)
     if (window.location.hash) {
       const targetHash = window.location.hash.substring(1);
-      const matchingTab = document.querySelector(`.admin-nav-item[data-target="${targetHash}"]`);
-      if (matchingTab) matchingTab.click();
+      switchAdminSection(targetHash);
     }
   }
 
@@ -423,63 +432,178 @@ document.addEventListener("DOMContentLoaded", () => {
   let roomsChartInstance = null;
   let revenueChartInstance = null;
 
+  function drawNativeBarChart(canvas) {
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    const parentW = canvas.parentElement ? canvas.parentElement.clientWidth : 420;
+    const w = canvas.width = Math.max(340, parentW - 30);
+    const h = canvas.height = 230;
+    ctx.clearRect(0, 0, w, h);
+
+    const labels = ['Horizon', 'Alpha', 'Oasis', 'Flex', 'Creative'];
+    const values = [142, 98, 76, 185, 64];
+    const colors = ['#E07A5F', '#D4A373', '#E9C46A', '#819870', '#C95A53'];
+    const maxVal = 200;
+    const padLeft = 40;
+    const padRight = 20;
+    const padTop = 30;
+    const padBottom = 35;
+    const chartW = w - padLeft - padRight;
+    const chartH = h - padTop - padBottom;
+    const colW = chartW / values.length;
+    const barW = Math.min(36, Math.max(20, colW - 20));
+
+    // Base horizontal grid line
+    ctx.strokeStyle = 'rgba(224, 196, 172, 0.15)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(padLeft, h - padBottom);
+    ctx.lineTo(w - padRight, h - padBottom);
+    ctx.stroke();
+
+    values.forEach((v, i) => {
+      const x = padLeft + i * colW + (colW - barW) / 2;
+      const barH = (v / maxVal) * chartH;
+      const y = h - padBottom - barH;
+
+      ctx.fillStyle = colors[i];
+      if (ctx.roundRect) {
+        ctx.beginPath();
+        ctx.roundRect(x, y, barW, barH, [6, 6, 0, 0]);
+        ctx.fill();
+      } else {
+        ctx.fillRect(x, y, barW, barH);
+      }
+
+      // Value label
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = 'bold 11px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(v + 'h', x + barW / 2, y - 6);
+
+      // Category label
+      ctx.fillStyle = '#B8A99A';
+      ctx.font = '11px sans-serif';
+      ctx.fillText(labels[i], x + barW / 2, h - padBottom + 18);
+    });
+  }
+
+  function drawNativeDonutChart(canvas) {
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    const parentW = canvas.parentElement ? canvas.parentElement.clientWidth : 340;
+    const w = canvas.width = Math.max(280, parentW - 30);
+    const h = canvas.height = 230;
+    ctx.clearRect(0, 0, w, h);
+
+    const slices = [
+      { label: 'Por Horas', pct: '35%', val: 35, color: '#E07A5F' },
+      { label: 'Por Jornada', pct: '25%', val: 25, color: '#D4A373' },
+      { label: 'Planes Mensuales', pct: '40%', val: 40, color: '#819870' }
+    ];
+    const total = 100;
+    const centerX = w / 2;
+    const centerY = (h - 40) / 2;
+    const outerR = Math.min(centerX, centerY) - 15;
+    const innerR = outerR * 0.58;
+
+    let start = -Math.PI / 2;
+    slices.forEach(s => {
+      const angle = (s.val / total) * 2 * Math.PI;
+      ctx.fillStyle = s.color;
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, outerR, start, start + angle);
+      ctx.arc(centerX, centerY, innerR, start + angle, start, true);
+      ctx.closePath();
+      ctx.fill();
+      start += angle;
+    });
+
+    // Center text
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = 'bold 12px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Mix Ingresos', centerX, centerY + 4);
+
+    // Legend
+    const legendY = h - 16;
+    const spacing = w / slices.length;
+    slices.forEach((s, idx) => {
+      const lx = idx * spacing + 10;
+      ctx.fillStyle = s.color;
+      ctx.fillRect(lx, legendY - 8, 8, 8);
+      ctx.fillStyle = '#B8A99A';
+      ctx.font = '10px sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText(`${s.label} (${s.pct})`, lx + 12, legendY);
+    });
+  }
+
   function initCharts() {
     const ctxRooms = document.getElementById("chartRoomsDemand");
     const ctxRevenue = document.getElementById("chartRevenueMix");
 
-    if (ctxRooms && window.Chart) {
-      if (roomsChartInstance) roomsChartInstance.destroy();
-      roomsChartInstance = new Chart(ctxRooms, {
-        type: 'bar',
-        data: {
-          labels: ['Boardroom Horizon', 'Private Alpha', 'Pod Oasis', 'Hot Desk Flex', 'Creative Lab'],
-          datasets: [{
-            label: 'Horas Reservadas este Mes',
-            data: [142, 98, 76, 185, 64],
-            backgroundColor: [
-              'rgba(224, 122, 95, 0.75)',
-              'rgba(212, 163, 115, 0.75)',
-              'rgba(233, 196, 106, 0.75)',
-              'rgba(129, 152, 112, 0.75)',
-              'rgba(201, 90, 83, 0.75)'
-            ],
-            borderColor: [
-              '#E07A5F', '#D4A373', '#E9C46A', '#819870', '#C95A53'
-            ],
-            borderWidth: 1.5,
-            borderRadius: 8
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: { legend: { display: false } },
-          scales: {
-            y: { grid: { color: 'rgba(224, 196, 172, 0.08)' }, ticks: { color: '#B8A99A' } },
-            x: { grid: { display: false }, ticks: { color: '#B8A99A' } }
+    if (window.Chart) {
+      if (ctxRooms) {
+        if (roomsChartInstance) roomsChartInstance.destroy();
+        roomsChartInstance = new Chart(ctxRooms, {
+          type: 'bar',
+          data: {
+            labels: ['Boardroom Horizon', 'Private Alpha', 'Pod Oasis', 'Hot Desk Flex', 'Creative Lab'],
+            datasets: [{
+              label: 'Horas Reservadas este Mes',
+              data: [142, 98, 76, 185, 64],
+              backgroundColor: [
+                'rgba(224, 122, 95, 0.75)',
+                'rgba(212, 163, 115, 0.75)',
+                'rgba(233, 196, 106, 0.75)',
+                'rgba(129, 152, 112, 0.75)',
+                'rgba(201, 90, 83, 0.75)'
+              ],
+              borderColor: [
+                '#E07A5F', '#D4A373', '#E9C46A', '#819870', '#C95A53'
+              ],
+              borderWidth: 1.5,
+              borderRadius: 8
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+              y: { grid: { color: 'rgba(224, 196, 172, 0.08)' }, ticks: { color: '#B8A99A' } },
+              x: { grid: { display: false }, ticks: { color: '#B8A99A' } }
+            }
           }
-        }
-      });
-    }
+        });
+      }
 
-    if (ctxRevenue && window.Chart) {
-      if (revenueChartInstance) revenueChartInstance.destroy();
-      revenueChartInstance = new Chart(ctxRevenue, {
-        type: 'doughnut',
-        data: {
-          labels: ['Por Horas', 'Por Jornadas', 'Planes Mensuales'],
-          datasets: [{
-            data: [35, 25, 40],
-            backgroundColor: ['#E07A5F', '#D4A373', '#819870'],
-            borderWidth: 0
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { position: 'bottom', labels: { color: '#B8A99A', font: { family: 'Plus Jakarta Sans' } } }
+      if (ctxRevenue) {
+        if (revenueChartInstance) revenueChartInstance.destroy();
+        revenueChartInstance = new Chart(ctxRevenue, {
+          type: 'doughnut',
+          data: {
+            labels: ['Por Horas', 'Por Jornadas', 'Planes Mensuales'],
+            datasets: [{
+              data: [35, 25, 40],
+              backgroundColor: ['#E07A5F', '#D4A373', '#819870'],
+              borderWidth: 0
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { position: 'bottom', labels: { color: '#B8A99A', font: { family: 'Plus Jakarta Sans' } } }
+            }
           }
-        }
-      });
+        });
+      }
+    } else {
+      // Offline fallback: Direct HTML5 Canvas drawing
+      drawNativeBarChart(ctxRooms);
+      drawNativeDonutChart(ctxRevenue);
     }
   }
 
