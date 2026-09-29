@@ -1,4 +1,4 @@
-// NEXUS COWORKING - EXECUTIVE CONCIERGE & ADMIN DASHBOARD LOGIC
+// NEXUS COWORKING - EXECUTIVE CONCIERGE & ADMIN DASHBOARD LOGIC (ENTERPRISE EDITION)
 document.addEventListener("DOMContentLoaded", () => {
   let activeCalendarSpaceId = "all";
   let bookings = NexusStorage.getBookings();
@@ -7,6 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Initialize
   initAdminDashboard();
   setupAdminTabs();
+  setupAdminFilters();
   startSlaTimers();
 
   function initAdminDashboard() {
@@ -35,6 +36,31 @@ document.addEventListener("DOMContentLoaded", () => {
         if (activeSec) activeSec.style.display = "block";
       });
     });
+
+    // Check hash in URL if provided (e.g. #secSla or #secBookings)
+    if (window.location.hash) {
+      const targetHash = window.location.hash.substring(1);
+      const matchingTab = document.querySelector(`.admin-nav-item[data-target="${targetHash}"]`);
+      if (matchingTab) matchingTab.click();
+    }
+  }
+
+  // Search & Filter controls for Bookings Table
+  function setupAdminFilters() {
+    const searchInput = document.getElementById("adminSearchInput");
+    const statusFilter = document.getElementById("adminStatusFilter");
+
+    if (searchInput) {
+      searchInput.addEventListener("input", () => {
+        renderAdminBookingsTable(searchInput.value, statusFilter.value);
+      });
+    }
+
+    if (statusFilter) {
+      statusFilter.addEventListener("change", () => {
+        renderAdminBookingsTable(searchInput ? searchInput.value : "", statusFilter.value);
+      });
+    }
   }
 
   // Render KPIs
@@ -121,7 +147,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function startSlaTimers() {
     setInterval(() => {
       renderSlaVerificationQueue();
-    }, 30000);
+    }, 25000);
   }
 
   // Open Fullscreen Voucher Inspection Modal
@@ -156,7 +182,7 @@ document.addEventListener("DOMContentLoaded", () => {
       target.status = "confirmed";
       NexusStorage.saveBookings(bookings);
       initAdminDashboard();
-      showToast(`✓ Pago SINPE de la reserva ${bookingId} validado. Factura electrónica emitida y notificada al socio por email.`, "success");
+      showToast(`✓ Pago SINPE de la reserva ${bookingId} validado. Factura electrónica generada en Odoo.`, "success");
     }
   };
 
@@ -175,12 +201,33 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  // Render Master Admin Bookings Table
-  function renderAdminBookingsTable() {
+  // Render Master Admin Bookings Table with Search & Status filters
+  function renderAdminBookingsTable(searchTerm = "", statusFilter = "all") {
     const tbody = document.getElementById("adminBookingsTbody");
     if (!tbody) return;
 
-    tbody.innerHTML = bookings.map(b => {
+    let filtered = bookings;
+
+    if (statusFilter !== "all") {
+      filtered = filtered.filter(b => b.status === statusFilter);
+    }
+
+    if (searchTerm.trim() !== "") {
+      const q = searchTerm.toLowerCase();
+      filtered = filtered.filter(b => 
+        b.id.toLowerCase().includes(q) || 
+        b.clientName.toLowerCase().includes(q) || 
+        b.spaceName.toLowerCase().includes(q) ||
+        (b.company && b.company.toLowerCase().includes(q))
+      );
+    }
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #B8A99A; padding: 24px;">No se encontraron reservas con los criterios especificados.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = filtered.map(b => {
       let statusBadge = "";
       if (b.status === "confirmed") {
         statusBadge = `<span class="chip chip-confirmed">✓ Confirmada</span>`;
@@ -252,6 +299,77 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
+  // Manual Room Reservation / Block by Admin
+  window.openManualBookingModal = function() {
+    const modal = document.getElementById("manualBookingModal");
+    const spaceSelect = document.getElementById("manSpaceSelect");
+    const dateInput = document.getElementById("manDate");
+    if (!modal || !spaceSelect) return;
+
+    spaceSelect.innerHTML = spaces.map(s => `<option value="${s.id}">${s.name} (${s.floor})</option>`).join("");
+    dateInput.value = new Date().toISOString().split("T")[0];
+    modal.classList.add("open");
+  };
+
+  window.closeManualBookingModal = function() {
+    document.getElementById("manualBookingModal").classList.remove("open");
+  };
+
+  window.confirmManualBooking = function() {
+    const spaceId = document.getElementById("manSpaceSelect").value;
+    const clientName = document.getElementById("manClientName").value.trim() || "Bloqueo Interno Gerencial";
+    const date = document.getElementById("manDate").value;
+    const timeSlot = document.getElementById("manTimeSlot").value;
+    const times = timeSlot.split(" - ");
+    const space = spaces.find(s => s.id === spaceId);
+
+    const newBooking = {
+      id: "MAN-" + Math.floor(1000 + Math.random() * 9000),
+      spaceId: space.id,
+      spaceName: space.name,
+      clientId: "admin-1",
+      clientName: clientName,
+      clientEmail: "admin@nexusspaces.com",
+      clientPhone: "+506 8888-6398",
+      company: "Gestión Interna NEXUS",
+      bookingType: "hour",
+      date: date,
+      timeStart: times[0],
+      timeEnd: times[1],
+      hours: 4,
+      addons: [],
+      totalCRC: space.priceHour * 4,
+      totalUSD: space.priceHourUSD * 4,
+      paymentMethod: "transfer",
+      sinpeRef: "ADMIN-OVERRIDE",
+      sinpeVoucherUrl: null,
+      status: "confirmed",
+      qrCodeData: `MANUAL-${space.id}-${date}`,
+      createdAt: new Date().toISOString()
+    };
+
+    bookings.unshift(newBooking);
+    NexusStorage.saveBookings(bookings);
+    closeManualBookingModal();
+    initAdminDashboard();
+    showToast(`✓ Sala ${space.name} bloqueada/reservada con éxito para el ${date}.`, "success");
+  };
+
+  // Export Bookings to CSV
+  window.exportBookingsToCSV = function() {
+    let csv = "ID Reserva,Socio,Empresa,Espacio,Fecha,Inicio,Fin,Total CRC,Total USD,Metodo Pago,Estado\n";
+    bookings.forEach(b => {
+      csv += `"${b.id}","${b.clientName}","${b.company || 'N/A'}","${b.spaceName}","${b.date}","${b.timeStart}","${b.timeEnd}",${b.totalCRC},${b.totalUSD},"${b.paymentMethod}","${b.status}"\n`;
+    });
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `reporte_reservas_nexus_${new Date().toISOString().split("T")[0]}.csv`;
+    link.click();
+    showToast("📥 Reporte gerencial exportado en formato CSV.", "success");
+  };
+
   // Individual Room Calendar Viewer
   function renderRoomCalendarViewer() {
     const selector = document.getElementById("adminRoomCalendarSelect");
@@ -299,7 +417,7 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
   }
 
-  // Render Charts with Warm Palette in Chart.js
+  // Render Charts
   let roomsChartInstance = null;
   let revenueChartInstance = null;
 
@@ -317,11 +435,11 @@ document.addEventListener("DOMContentLoaded", () => {
             label: 'Horas Reservadas este Mes',
             data: [142, 98, 76, 185, 64],
             backgroundColor: [
-              'rgba(224, 122, 95, 0.75)',  // Warm Terracotta
-              'rgba(212, 163, 115, 0.75)', // Champagne Gold
-              'rgba(233, 196, 106, 0.75)', // Warm Amber
-              'rgba(129, 152, 112, 0.75)', // Sage Green
-              'rgba(201, 90, 83, 0.75)'    // Rosewood
+              'rgba(224, 122, 95, 0.75)',
+              'rgba(212, 163, 115, 0.75)',
+              'rgba(233, 196, 106, 0.75)',
+              'rgba(129, 152, 112, 0.75)',
+              'rgba(201, 90, 83, 0.75)'
             ],
             borderColor: [
               '#E07A5F', '#D4A373', '#E9C46A', '#819870', '#C95A53'
@@ -332,9 +450,7 @@ document.addEventListener("DOMContentLoaded", () => {
         },
         options: {
           responsive: true,
-          plugins: {
-            legend: { display: false }
-          },
+          plugins: { legend: { display: false } },
           scales: {
             y: { grid: { color: 'rgba(224, 196, 172, 0.08)' }, ticks: { color: '#B8A99A' } },
             x: { grid: { display: false }, ticks: { color: '#B8A99A' } }
@@ -388,5 +504,22 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
       `;
     }).join("");
+  }
+
+  function showToast(message, type = "info") {
+    let container = document.getElementById("toastContainer");
+    if (!container) {
+      container = document.createElement("div");
+      container.id = "toastContainer";
+      container.className = "toast-container";
+      document.body.appendChild(container);
+    }
+    const toast = document.createElement("div");
+    toast.className = "toast";
+    toast.innerHTML = `<span>${message}</span>`;
+    container.appendChild(toast);
+    setTimeout(() => {
+      toast.remove();
+    }, 4200);
   }
 });

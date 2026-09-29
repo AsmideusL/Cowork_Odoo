@@ -24,14 +24,15 @@
         <span class="admin-badge-header">⚡ Concierge &amp; Operaciones Odoo 19</span>
       </div>
 
-      <div style="display: flex; align-items: center; gap: 16px;">
-        <a href="index.html" class="btn btn-secondary btn-sm">⬅ Ver Portal Público</a>
-        <button class="btn btn-primary btn-sm" onclick="location.reload()">🔄 Actualizar Datos</button>
+      <div style="display: flex; align-items: center; gap: 14px;">
+        <button class="btn btn-secondary btn-sm" onclick="openManualBookingModal()">➕ Bloquear / Reservar Sala</button>
+        <button class="btn btn-secondary btn-sm" onclick="exportBookingsToCSV()">📥 Exportar Reporte CSV</button>
+        <a href="index.html" class="btn btn-admin btn-sm">🚪 Salir al Portal Público</a>
       </div>
     </div>
   </header>
 
-  <main class="container" style="padding-top: 40px; padding-bottom: 85px;">
+  <main class="container" style="padding-top: 36px; padding-bottom: 85px;">
 
     <!-- Top KPI Matrix -->
     <div class="kpi-grid">
@@ -63,17 +64,17 @@
     </div>
 
     <!-- Navigation Tabs for Admin Sections -->
-    <div style="display: flex; gap: 12px; margin-bottom: 30px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 14px;">
+    <div style="display: flex; gap: 10px; margin-bottom: 28px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 14px; flex-wrap: wrap;">
       <button class="toggle-pill admin-nav-item active" data-target="secSla">⏱️ Bandeja de Aprobación SINPE &amp; SLA</button>
       <button class="toggle-pill admin-nav-item" data-target="secCalendars">📅 Calendarios Individuales por Sala</button>
-      <button class="toggle-pill admin-nav-item" data-target="secBookings">📋 Gestión de Reservas &amp; Cambios</button>
+      <button class="toggle-pill admin-nav-item" data-target="secBookings">📋 Gestión de Reservas &amp; Auditoría</button>
       <button class="toggle-pill admin-nav-item" data-target="secAnalytics">📊 Informes de Demanda &amp; Rentabilidad</button>
     </div>
 
     <!-- SECTION 1: SLA SINPE APPROVALS QUEUE -->
     <section class="admin-section" id="secSla">
       <div class="sla-alert-card">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 10px;">
           <div>
             <h2 style="color: #FFF; font-size: 1.35rem;">Bandeja de Validación de Comprobantes SINPE Móvil</h2>
             <p style="color: var(--text-muted); font-size: 0.9rem;">
@@ -115,12 +116,23 @@
     <!-- SECTION 3: ALL BOOKINGS & RESCHEDULE TABLE -->
     <section class="admin-section" id="secBookings" style="display: none;">
       <div class="floorplan-card">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 14px;">
           <div>
             <h2 style="color: #FFF; font-size: 1.35rem;">Control Central de Reservas</h2>
             <p style="color: var(--text-muted); font-size: 0.9rem;">
               Permite a administración reprogramar horarios o cancelar reservas a solicitud del socio.
             </p>
+          </div>
+          <!-- Filter Controls -->
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <input type="text" id="adminSearchInput" class="field-input" placeholder="Buscar por socio, ID o sala..." style="min-width: 240px; padding: 7px 12px;">
+            <select id="adminStatusFilter" class="field-select" style="padding: 7px 12px;">
+              <option value="all">Todos los estados</option>
+              <option value="pending_sinpe">Pendientes SINPE</option>
+              <option value="confirmed">Confirmadas</option>
+              <option value="rescheduled">Reprogramadas</option>
+              <option value="cancelled">Canceladas</option>
+            </select>
           </div>
         </div>
 
@@ -176,6 +188,47 @@
     </section>
 
   </main>
+
+  <!-- MANUAL BOOKING / ROOM BLOCK MODAL -->
+  <div class="modal-backdrop" id="manualBookingModal">
+    <div class="modal-card" style="max-width: 580px;">
+      <div class="modal-header">
+        <h3 style="color: #FFF; font-size: 1.2rem;">➕ Crear Reserva Manual / Bloqueo Gerencial</h3>
+        <button class="modal-close" onclick="closeManualBookingModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="color: #B8A99A; font-size: 0.86rem; margin-bottom: 16px;">
+          Permite a Gerencia bloquear una sala por mantenimiento, o registrar una reserva interna fuera de pasarela.
+        </p>
+        <div class="field-group" style="margin-bottom: 12px;">
+          <label class="field-label">Espacio / Sala</label>
+          <select id="manSpaceSelect" class="field-select"></select>
+        </div>
+        <div class="field-group" style="margin-bottom: 12px;">
+          <label class="field-label">Nombre del Cliente / Motivo del Bloqueo</label>
+          <input type="text" id="manClientName" class="field-input" placeholder="ej. Mantenimiento Preventivo o Empresa VIP">
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+          <div class="field-group">
+            <label class="field-label">Fecha</label>
+            <input type="date" id="manDate" class="field-input">
+          </div>
+          <div class="field-group">
+            <label class="field-label">Horario</label>
+            <select id="manTimeSlot" class="field-select">
+              <option value="08:00 - 12:00">08:00 - 12:00 (Mañana)</option>
+              <option value="13:00 - 17:00">13:00 - 17:00 (Tarde)</option>
+              <option value="08:00 - 18:00">08:00 - 18:00 (Todo el Día)</option>
+            </select>
+          </div>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 10px;">
+          <button class="btn btn-secondary" onclick="closeManualBookingModal()">Cancelar</button>
+          <button class="btn btn-primary" onclick="confirmManualBooking()">Confirmar y Bloquear ➔</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- VOUCHER ZOOM INSPECTION MODAL -->
   <div class="modal-backdrop" id="voucherModal">

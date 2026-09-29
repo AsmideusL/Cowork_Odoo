@@ -1,5 +1,14 @@
-// Mock Data Store for NEXUS Coworking & Private Spaces Demo
+// Mock Data Store for NEXUS Coworking & Private Spaces Demo (Full Feature Suite)
 const NEXUS_DATA = {
+  adminUser: {
+    id: "admin-1",
+    name: "Lic. Roberto Alvarado (Gerente)",
+    email: "admin@nexusspaces.com",
+    role: "admin",
+    roleLabel: "Gerente de Operaciones",
+    avatar: "R"
+  },
+
   spaces: [
     {
       id: "sp-1",
@@ -13,7 +22,6 @@ const NEXUS_DATA = {
       priceHourUSD: 28,
       priceDayUSD: 180,
       priceMonthUSD: 2300,
-      // Curated warm architectural photography (rich walnut wood, ambient lighting)
       image: "https://images.unsplash.com/photo-1577495508048-b635879837f1?auto=format&fit=crop&w=1000&q=80",
       description: "Mesa artesanal de nogal macizo, iluminación indirecta cálida regulable, videoconferencia Polycom 4K y ventanales con vista a la cordillera.",
       amenities: ["Pantalla 4K 85\" OLED", "Videoconferencia Polycom", "Pizarra de Cristal Templado", "Café de Especialidad Nespresso", "WiFi 6 Dedicado 1Gbps", "Climatización Silenciosa"],
@@ -38,7 +46,6 @@ const NEXUS_DATA = {
       priceHourUSD: 22,
       priceDayUSD: 140,
       priceMonthUSD: 1600,
-      // Warm boutique office interior
       image: "https://images.unsplash.com/photo-1497215842964-222b430dc094?auto=format&fit=crop&w=1000&q=80",
       description: "Suite corporativa privada con sillas ergonómicas de cuero, acceso biométrico Smart PIN 24/7 y acabados en roble y bronce cepillado.",
       amenities: ["5 Puestos Ergonómicos", "Acceso Cerradura Smart PIN", "Pizarra Magnética", "Mini-bar Ejecutivo", "Línea Telefónica IP", "Servicio Concierge"],
@@ -62,7 +69,6 @@ const NEXUS_DATA = {
       priceHourUSD: 9,
       priceDayUSD: 52,
       priceMonthUSD: 600,
-      // Warm individual acoustic pod
       image: "https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?auto=format&fit=crop&w=1000&q=80",
       description: "Cabina individual con tapicería acústica de fieltro nórdico (-35dB), luz fotográfica LED de temperatura regulable y ventilación suave.",
       amenities: ["Insonorización -35dB", "Luz Facial Fotográfica", "Conexión Ethernet Gigabit", "Ventilación Filtrada", "Cargador Rápido Qi"],
@@ -86,7 +92,6 @@ const NEXUS_DATA = {
       priceHourUSD: 6,
       priceDayUSD: 30,
       priceMonthUSD: 340,
-      // Warm sunlit lounge with plants and wooden tables
       image: "https://images.unsplash.com/photo-1527192491265-7e15c55b1ed2?auto=format&fit=crop&w=1000&q=80",
       description: "Área abierta con luz natural abundante, plantas interiores, acceso a la barra barista con café de origen y terraza ajardinada al aire libre.",
       amenities: ["Escritorios Compartidos", "Cafetería & Snacks Artesanales", "Terraza & Jardín Zen", "Eventos de Networking", "Casilleros con Clave"],
@@ -109,7 +114,6 @@ const NEXUS_DATA = {
       priceHourUSD: 34,
       priceDayUSD: 210,
       priceMonthUSD: 2650,
-      // Workshop studio with warm industrial lighting
       image: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=1000&q=80",
       description: "Espacio dinámico modular para sesiones de Design Thinking y workshops estratégicos. Paredes continuas de cristal escribible y proyector láser.",
       amenities: ["Muro de Vidrio Escribible", "Proyector Láser Tiro Corto", "Kits de Facilitación", "Mobiliario Modular Reconfigurable", "Sonido Hi-Fi Inalámbrico"],
@@ -193,11 +197,11 @@ const NEXUS_DATA = {
       paymentMethod: "sinpe",
       sinpeRef: "SINPE-992104-BN",
       sinpeVoucherUrl: "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=600&q=80",
-      sinpeSubmittedAt: "2026-09-29T11:35:00",
+      sinpeSubmittedAt: "2026-09-29T12:20:00",
       status: "pending_sinpe",
       qrCodeData: "NEXUS-RES-9844-HORIZON-VALID",
       slaDeadlineMinutes: 30,
-      createdAt: "2026-09-29T11:35:00"
+      createdAt: "2026-09-29T12:20:00"
     },
     {
       id: "RES-9830",
@@ -243,11 +247,11 @@ const NEXUS_DATA = {
       paymentMethod: "sinpe",
       sinpeRef: "SINPE-884210-BAC",
       sinpeVoucherUrl: "https://images.unsplash.com/photo-1554224154-26032ffc0d07?auto=format&fit=crop&w=600&q=80",
-      sinpeSubmittedAt: "2026-09-29T10:15:00",
+      sinpeSubmittedAt: "2026-09-29T12:05:00",
       status: "pending_sinpe",
       qrCodeData: "NEXUS-RES-9824-OASIS-PENDING",
       slaDeadlineMinutes: 30,
-      createdAt: "2026-09-29T10:15:00"
+      createdAt: "2026-09-29T12:05:00"
     },
     {
       id: "RES-9818",
@@ -275,6 +279,12 @@ const NEXUS_DATA = {
     }
   ],
 
+  notifications: [
+    { id: "notif-1", title: "Nuevo Pago SINPE por Validar", message: "Reserva RES-9844 (Mariana Rojas) enviada con SLA de 30m.", time: "Hace 12 min", unread: true, link: "admin.html#secSla" },
+    { id: "notif-2", title: "Reserva Confirmada", message: "Reserva RES-9830 confirmada y factura electrónica enviada.", time: "Hace 1 hora", unread: false, link: "admin.html#secBookings" },
+    { id: "notif-3", title: "Recordatorio de Mantenimiento", message: "Limpieza profunda programada para Focus Pod Oasis a las 18:30.", time: "Hace 3 horas", unread: false, link: "admin.html#secCalendars" }
+  ],
+
   sinpeAccount: {
     phone: "8888-6398",
     holder: "Nexus Coworking SpA / S.A.",
@@ -286,42 +296,57 @@ const NEXUS_DATA = {
 
 const NexusStorage = {
   getSpaces: () => {
-    const data = localStorage.getItem("nexus_spaces_v2");
+    const data = localStorage.getItem("nexus_spaces_v3");
     return data ? JSON.parse(data) : NEXUS_DATA.spaces;
   },
   saveSpaces: (spaces) => {
-    localStorage.setItem("nexus_spaces_v2", JSON.stringify(spaces));
+    localStorage.setItem("nexus_spaces_v3", JSON.stringify(spaces));
   },
   getBookings: () => {
-    const data = localStorage.getItem("nexus_bookings_v2");
+    const data = localStorage.getItem("nexus_bookings_v3");
     return data ? JSON.parse(data) : NEXUS_DATA.bookings;
   },
   saveBookings: (bookings) => {
-    localStorage.setItem("nexus_bookings_v2", JSON.stringify(bookings));
+    localStorage.setItem("nexus_bookings_v3", JSON.stringify(bookings));
   },
   getClients: () => {
-    const data = localStorage.getItem("nexus_clients_v2");
+    const data = localStorage.getItem("nexus_clients_v3");
     return data ? JSON.parse(data) : NEXUS_DATA.clients;
   },
   saveClients: (clients) => {
-    localStorage.setItem("nexus_clients_v2", JSON.stringify(clients));
+    localStorage.setItem("nexus_clients_v3", JSON.stringify(clients));
   },
   getCurrentUser: () => {
-    const user = localStorage.getItem("nexus_current_user_v2");
+    const user = localStorage.getItem("nexus_current_user_v3");
     return user ? JSON.parse(user) : NEXUS_DATA.clients[0];
   },
   setCurrentUser: (user) => {
-    localStorage.setItem("nexus_current_user_v2", JSON.stringify(user));
+    localStorage.setItem("nexus_current_user_v3", JSON.stringify(user));
+  },
+  getAuthRole: () => {
+    return localStorage.getItem("nexus_auth_role") || "client"; // 'admin' or 'client'
+  },
+  setAuthRole: (role) => {
+    localStorage.setItem("nexus_auth_role", role);
+  },
+  getNotifications: () => {
+    const data = localStorage.getItem("nexus_notifications");
+    return data ? JSON.parse(data) : NEXUS_DATA.notifications;
+  },
+  saveNotifications: (notifs) => {
+    localStorage.setItem("nexus_notifications", JSON.stringify(notifs));
   },
   resetData: () => {
     localStorage.clear();
   }
 };
 
-// Initialize if not present
-if (!localStorage.getItem("nexus_spaces_v2")) {
+// Initialize defaults
+if (!localStorage.getItem("nexus_spaces_v3")) {
   NexusStorage.saveSpaces(NEXUS_DATA.spaces);
   NexusStorage.saveBookings(NEXUS_DATA.bookings);
   NexusStorage.saveClients(NEXUS_DATA.clients);
   NexusStorage.setCurrentUser(NEXUS_DATA.clients[0]);
+  NexusStorage.setAuthRole("client");
+  NexusStorage.saveNotifications(NEXUS_DATA.notifications);
 }

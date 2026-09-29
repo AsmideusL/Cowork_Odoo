@@ -1,43 +1,107 @@
-// NEXUS COWORKING - FRONTEND CLIENT APPLICATION LOGIC (BOUTIQUE LUXURY EDITION)
+// NEXUS COWORKING - FRONTEND CLIENT APPLICATION LOGIC (ENTERPRISE DEMO SUITE)
 document.addEventListener("DOMContentLoaded", () => {
   let currentFilterType = "hour";
   let selectedSpace = null;
   let selectedDate = new Date().toISOString().split("T")[0];
   let selectedTimeSlot = null;
+  let selectedDaysCount = 1;
+  let selectedMonthPlan = 1;
   let selectedAddons = new Set();
   let currentUser = NexusStorage.getCurrentUser();
+  let currentRole = NexusStorage.getAuthRole();
 
   // Initialize UI
   initUserBadge();
+  initNotificationBell();
   renderSpacesCatalog();
   setupFloorPlanInteractions();
   setupSearchEvents();
   setupClientPortalEvents();
 
-  // Sync user display in navbar
+  // Sync user display in navbar & Admin indicator
   function initUserBadge() {
     const userBadgeEl = document.getElementById("navUserBadge");
     if (!userBadgeEl) return;
-    userBadgeEl.innerHTML = `
-      <div class="user-avatar">${currentUser.name.charAt(0)}</div>
-      <div style="text-align: left;">
-        <div style="font-size: 0.85rem; font-weight: 700; color: #FFF; line-height: 1.2;">${currentUser.name}</div>
-        <span class="user-tier-badge">⭐ ${currentUser.loyaltyTier}</span>
-      </div>
-    `;
-    userBadgeEl.onclick = openClientProfileModal;
+
+    if (currentRole === "admin") {
+      userBadgeEl.innerHTML = `
+        <div class="user-avatar" style="background: var(--grad-gold);">👑</div>
+        <div style="text-align: left;">
+          <div style="font-size: 0.85rem; font-weight: 700; color: #FFF; line-height: 1.2;">Lic. Roberto Alvarado</div>
+          <span class="user-tier-badge" style="background: rgba(224, 122, 95, 0.2); color: var(--champagne);">Gerencia Odoo</span>
+        </div>
+      `;
+    } else {
+      userBadgeEl.innerHTML = `
+        <div class="user-avatar">${currentUser.name.charAt(0)}</div>
+        <div style="text-align: left;">
+          <div style="font-size: 0.85rem; font-weight: 700; color: #FFF; line-height: 1.2;">${currentUser.name}</div>
+          <span class="user-tier-badge">⭐ ${currentUser.loyaltyTier}</span>
+        </div>
+      `;
+    }
+    userBadgeEl.onclick = openAuthModal;
   }
 
-  // Render Spaces in Catalog
-  function renderSpacesCatalog(filterCategory = "all") {
+  // Notification Bell
+  function initNotificationBell() {
+    const bellBtn = document.getElementById("notifBellBtn");
+    const dropdown = document.getElementById("notifDropdown");
+    const container = document.getElementById("notifItemsContainer");
+    const badge = document.getElementById("notifCountBadge");
+
+    if (!bellBtn || !dropdown) return;
+
+    bellBtn.onclick = (e) => {
+      e.stopPropagation();
+      dropdown.classList.toggle("open");
+    };
+
+    document.addEventListener("click", (e) => {
+      if (!dropdown.contains(e.target) && e.target !== bellBtn) {
+        dropdown.classList.remove("open");
+      }
+    });
+
+    const notifs = NexusStorage.getNotifications();
+    const unreadCount = notifs.filter(n => n.unread).length;
+    if (badge) badge.textContent = unreadCount;
+
+    if (container) {
+      container.innerHTML = notifs.map(n => `
+        <div class="notif-item ${n.unread ? 'unread' : ''}" onclick="window.location.href='${n.link}'">
+          <div class="notif-title">${n.title}</div>
+          <div class="notif-desc">${n.message}</div>
+          <div class="notif-time">${n.time}</div>
+        </div>
+      `).join("");
+    }
+  }
+
+  window.markAllNotifsRead = function() {
+    const notifs = NexusStorage.getNotifications();
+    notifs.forEach(n => n.unread = false);
+    NexusStorage.saveNotifications(notifs);
+    initNotificationBell();
+    showToast("✓ Todas las notificaciones marcadas como leídas", "info");
+  };
+
+  // Render Spaces in Catalog with Filters
+  function renderSpacesCatalog(filterCategory = "all", minCapacity = 1) {
     const grid = document.getElementById("spacesGrid");
     if (!grid) return;
     const spaces = NexusStorage.getSpaces();
 
     const filtered = spaces.filter(sp => {
       if (filterCategory !== "all" && sp.category !== filterCategory) return false;
+      if (minCapacity !== "all" && sp.capacity < parseInt(minCapacity, 10)) return false;
       return true;
     });
+
+    if (filtered.length === 0) {
+      grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #B8A99A;">No se encontraron espacios con los filtros seleccionados.</div>`;
+      return;
+    }
 
     grid.innerHTML = filtered.map(sp => {
       let priceDisplay = "";
@@ -74,27 +138,38 @@ document.addEventListener("DOMContentLoaded", () => {
               <div class="price-box">
                 <span class="price-amount">${priceDisplay}</span>
               </div>
-              <button class="btn btn-primary btn-sm btn-book-space" data-id="${sp.id}">
-                Reservar ➔
-              </button>
+              <div style="display: flex; gap: 8px;">
+                <button class="btn btn-secondary btn-sm btn-inspect-cal" data-id="${sp.id}" title="Ver agenda completa">
+                  📅 Calendario
+                </button>
+                <button class="btn btn-primary btn-sm btn-book-space" data-id="${sp.id}">
+                  Reservar ➔
+                </button>
+              </div>
             </div>
           </div>
         </div>
       `;
     }).join("");
 
+    // Attach event listeners
     document.querySelectorAll(".btn-book-space").forEach(btn => {
       btn.addEventListener("click", (e) => {
         e.stopPropagation();
-        const id = btn.getAttribute("data-id");
-        openBookingModal(id);
+        openBookingModal(btn.getAttribute("data-id"));
+      });
+    });
+
+    document.querySelectorAll(".btn-inspect-cal").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        openRoomCalendarModal(btn.getAttribute("data-id"));
       });
     });
 
     document.querySelectorAll(".space-card").forEach(card => {
       card.addEventListener("click", () => {
-        const id = card.getAttribute("data-space-id");
-        openBookingModal(id);
+        openBookingModal(card.getAttribute("data-space-id"));
       });
     });
   }
@@ -106,7 +181,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return "badge-flex";
   }
 
-  // Interactive 2D Architectural Floor Plan
+  // Interactive 2D Floor Plan
   function setupFloorPlanInteractions() {
     const zones = document.querySelectorAll(".fp-zone");
     const previewDrawer = document.getElementById("fpPreviewDrawer");
@@ -150,33 +225,101 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Search Bar Filter Events
   function setupSearchEvents() {
-    document.querySelectorAll(".booking-type-toggle .toggle-pill").forEach(pill => {
+    const pills = [
+      document.getElementById("pillHour"),
+      document.getElementById("pillDay"),
+      document.getElementById("pillMonth")
+    ];
+
+    pills.forEach(pill => {
+      if (!pill) return;
       pill.addEventListener("click", () => {
-        document.querySelectorAll(".booking-type-toggle .toggle-pill").forEach(p => p.classList.remove("active"));
+        pills.forEach(p => p && p.classList.remove("active"));
         pill.classList.add("active");
         currentFilterType = pill.getAttribute("data-type");
-        renderSpacesCatalog();
+        renderSpacesCatalog(
+          document.getElementById("searchCategory").value,
+          document.getElementById("searchCapacity").value
+        );
       });
     });
 
     const categorySelect = document.getElementById("searchCategory");
-    if (categorySelect) {
-      categorySelect.addEventListener("change", (e) => {
-        renderSpacesCatalog(e.target.value);
-      });
+    const capacitySelect = document.getElementById("searchCapacity");
+    const btnSearch = document.getElementById("btnFilterSearch");
+
+    function applyFilters() {
+      const cat = categorySelect ? categorySelect.value : "all";
+      const cap = capacitySelect ? capacitySelect.value : "all";
+      renderSpacesCatalog(cat, cap);
     }
 
-    const dateFilter = document.getElementById("searchDate");
-    if (dateFilter) {
-      dateFilter.value = selectedDate;
-      dateFilter.addEventListener("change", (e) => {
-        selectedDate = e.target.value;
-      });
+    if (categorySelect) categorySelect.onchange = applyFilters;
+    if (capacitySelect) capacitySelect.onchange = applyFilters;
+    if (btnSearch) {
+      btnSearch.onclick = () => {
+        applyFilters();
+        document.getElementById("catalogo").scrollIntoView({ behavior: "smooth" });
+      };
     }
   }
 
-  // Booking Modal Logic
+  // Individual Room Calendar Inspection Modal
+  window.openRoomCalendarModal = function(spaceId) {
+    const space = NexusStorage.getSpaces().find(s => s.id === spaceId);
+    if (!space) return;
+
+    const modal = document.getElementById("roomCalendarModal");
+    document.getElementById("roomCalModalTitle").textContent = space.name;
+    document.getElementById("roomCalModalSub").textContent = `📍 ${space.floor} · Capacidad: ${space.capacity} personas · ${space.badge}`;
+
+    const container = document.getElementById("roomCalModalGridContainer");
+    const bookings = NexusStorage.getBookings().filter(b => b.spaceId === space.id && b.status !== "cancelled");
+
+    const days = [
+      { date: "2026-09-29", label: "Hoy (29 Sep)" },
+      { date: "2026-09-30", label: "Mañana (30 Sep)" },
+      { date: "2026-10-01", label: "Jueves (01 Oct)" },
+      { date: "2026-10-02", label: "Viernes (02 Oct)" }
+    ];
+
+    container.innerHTML = `
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;">
+        ${days.map(d => {
+          const dayB = bookings.filter(b => b.date === d.date);
+          return `
+            <div style="background: rgba(36,29,25,0.45); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 12px;">
+              <div style="font-weight: 700; color: #FFF; font-size: 0.88rem; margin-bottom: 8px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 4px;">
+                ${d.label}
+              </div>
+              ${dayB.length === 0 ? `<div style="font-size: 0.78rem; color: var(--sage-green);">✓ Todo el día libre</div>` : ''}
+              ${dayB.map(b => `
+                <div style="background: rgba(201, 90, 83, 0.15); border-left: 2px solid var(--rosewood); padding: 6px 8px; border-radius: 4px; margin-bottom: 6px;">
+                  <div style="font-size: 0.75rem; font-weight: 700; color: #FFF;">⏰ ${b.timeStart} - ${b.timeEnd}</div>
+                  <div style="font-size: 0.72rem; color: #B8A99A;">${b.clientName}</div>
+                </div>
+              `).join("")}
+            </div>
+          `;
+        }).join("")}
+      </div>
+    `;
+
+    document.getElementById("roomCalModalBookBtn").onclick = () => {
+      closeRoomCalendarModal();
+      openBookingModal(space.id);
+    };
+
+    modal.classList.add("open");
+  };
+
+  window.closeRoomCalendarModal = function() {
+    document.getElementById("roomCalendarModal").classList.remove("open");
+  };
+
+  // Booking Modal Logic (Adapts to Hour, Day, or Month Mode)
   window.openBookingModal = function(spaceId) {
     const spaces = NexusStorage.getSpaces();
     selectedSpace = spaces.find(s => s.id === spaceId);
@@ -186,14 +329,11 @@ document.addEventListener("DOMContentLoaded", () => {
     selectedTimeSlot = null;
 
     const modal = document.getElementById("bookingModal");
-    const title = document.getElementById("modalSpaceTitle");
-    const meta = document.getElementById("modalSpaceMeta");
-
-    title.textContent = selectedSpace.name;
-    meta.textContent = `📍 ${selectedSpace.floor} | 👥 Capacidad: ${selectedSpace.capacity} pers. | ⭐ ${selectedSpace.badge}`;
+    document.getElementById("modalSpaceTitle").textContent = selectedSpace.name;
+    document.getElementById("modalSpaceMeta").textContent = `📍 ${selectedSpace.floor} | 👥 Capacidad: ${selectedSpace.capacity} pers. | ⭐ ${selectedSpace.badge}`;
 
     switchModalStep(1);
-    renderCalendarSlots();
+    renderBookingModeStep1();
     renderAddonsSelector();
     modal.classList.add("open");
   };
@@ -217,7 +357,98 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  function renderCalendarSlots() {
+  // Render Step 1 depending on whether it's Hour, Day, or Month
+  function renderBookingModeStep1() {
+    const container = document.getElementById("bookingModeContainer");
+    if (!container || !selectedSpace) return;
+
+    if (currentFilterType === "hour") {
+      container.innerHTML = `
+        <div class="room-cal-matrix">
+          <div class="cal-header-row">
+            <span style="font-weight: 700; color: #FFFFFF; font-size: 0.96rem;">📅 Reserva por Horas: Disponibilidad de la Sala</span>
+            <input type="date" id="bookingModalDate" class="field-input" value="${selectedDate}" style="padding: 6px 14px; width: auto;">
+          </div>
+          <p style="font-size: 0.84rem; color: #B8A99A; margin-bottom: 14px;">
+            Seleccione la franja horaria que desea reservar. Los horarios tachados ya están ocupados.
+          </p>
+          <div class="cal-grid-slots" id="modalSlotsContainer"></div>
+        </div>
+      `;
+      renderHourSlots();
+    } else if (currentFilterType === "day") {
+      container.innerHTML = `
+        <div class="room-cal-matrix">
+          <div class="cal-header-row">
+            <span style="font-weight: 700; color: #FFFFFF; font-size: 0.96rem;">📅 Reserva por Jornadas Completas</span>
+          </div>
+          <p style="font-size: 0.84rem; color: #B8A99A; margin-bottom: 16px;">
+            Acceso exclusivo al espacio de 08:00 a 18:00 durante las fechas seleccionadas.
+          </p>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+            <div class="field-group">
+              <label class="field-label">Fecha de Inicio</label>
+              <input type="date" id="dayStartDate" class="field-input" value="${selectedDate}">
+            </div>
+            <div class="field-group">
+              <label class="field-label">Cantidad de Jornadas / Días</label>
+              <select id="dayCountSelect" class="field-select">
+                <option value="1">1 Jornada (Día Completo)</option>
+                <option value="2">2 Jornadas</option>
+                <option value="3">3 Jornadas</option>
+                <option value="5">5 Jornadas (Semana Laboral)</option>
+                <option value="10">10 Jornadas</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      `;
+      const daySelect = document.getElementById("dayCountSelect");
+      daySelect.onchange = (e) => {
+        selectedDaysCount = parseInt(e.target.value, 10);
+      };
+      const dayStart = document.getElementById("dayStartDate");
+      dayStart.onchange = (e) => {
+        selectedDate = e.target.value;
+      };
+    } else { // Month
+      container.innerHTML = `
+        <div class="room-cal-matrix">
+          <div class="cal-header-row">
+            <span style="font-weight: 700; color: #FFFFFF; font-size: 0.96rem;">🏢 Membresía Mensual de Espacio</span>
+          </div>
+          <p style="font-size: 0.84rem; color: #B8A99A; margin-bottom: 16px;">
+            Acceso continuo 24/7 con cerradura inteligente y domicilio comercial incluido.
+          </p>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+            <div class="field-group">
+              <label class="field-label">Mes de Inicio</label>
+              <input type="date" id="monthStartDate" class="field-input" value="${selectedDate}">
+            </div>
+            <div class="field-group">
+              <label class="field-label">Plazo de Contratación</label>
+              <select id="monthPlanSelect" class="field-select">
+                <option value="1">1 Mes Renovación Estándar</option>
+                <option value="3">3 Meses (10% de descuento incluido)</option>
+                <option value="6">6 Meses (15% de descuento corporativo)</option>
+                <option value="12">12 Meses Anual (20% de descuento corporativo)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      `;
+      const mPlan = document.getElementById("monthPlanSelect");
+      mPlan.onchange = (e) => {
+        selectedMonthPlan = parseInt(e.target.value, 10);
+      };
+      const mStart = document.getElementById("monthStartDate");
+      mStart.onchange = (e) => {
+        selectedDate = e.target.value;
+      };
+    }
+  }
+
+  function renderHourSlots() {
     const container = document.getElementById("modalSlotsContainer");
     const dateInput = document.getElementById("bookingModalDate");
     if (!container || !selectedSpace) return;
@@ -225,7 +456,7 @@ document.addEventListener("DOMContentLoaded", () => {
     dateInput.value = selectedDate;
     dateInput.onchange = (e) => {
       selectedDate = e.target.value;
-      renderCalendarSlots();
+      renderHourSlots();
     };
 
     const timeSlots = [
@@ -242,9 +473,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     container.innerHTML = timeSlots.map(slot => {
       const slotStart = slot.split(" - ")[0];
-      const isBooked = bookings.some(b => {
-        return slotStart >= b.timeStart && slotStart < b.timeEnd;
-      });
+      const isBooked = bookings.some(b => slotStart >= b.timeStart && slotStart < b.timeEnd);
 
       if (isBooked) {
         return `<button type="button" class="slot-btn booked" title="Espacio Ocupado">${slot} (Ocupado)</button>`;
@@ -299,8 +528,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   window.validateStep1 = function() {
-    if (!selectedTimeSlot && currentFilterType === "hour") {
-      showToast("⚠️ Por favor selecciona una franja horaria en el calendario.", "warning");
+    if (currentFilterType === "hour" && !selectedTimeSlot) {
+      showToast("⚠️ Por favor selecciona una franja horaria disponible.", "warning");
       return;
     }
     document.getElementById("custName").value = currentUser.name;
@@ -345,13 +574,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let baseRateCRC = selectedSpace.priceHour;
     let baseRateUSD = selectedSpace.priceHourUSD;
+    let durationLabel = "";
 
     if (currentFilterType === "day") {
-      baseRateCRC = selectedSpace.priceDay;
-      baseRateUSD = selectedSpace.priceDayUSD;
+      baseRateCRC = selectedSpace.priceDay * selectedDaysCount;
+      baseRateUSD = selectedSpace.priceDayUSD * selectedDaysCount;
+      durationLabel = `${selectedDaysCount} ${selectedDaysCount === 1 ? 'jornada completa' : 'jornadas completas'}`;
     } else if (currentFilterType === "month") {
-      baseRateCRC = selectedSpace.priceMonth;
-      baseRateUSD = selectedSpace.priceMonthUSD;
+      let termDiscount = 1;
+      if (selectedMonthPlan === 3) termDiscount = 0.90;
+      if (selectedMonthPlan === 6) termDiscount = 0.85;
+      if (selectedMonthPlan === 12) termDiscount = 0.80;
+      baseRateCRC = (selectedSpace.priceMonth * selectedMonthPlan) * termDiscount;
+      baseRateUSD = Math.round((selectedSpace.priceMonthUSD * selectedMonthPlan) * termDiscount);
+      durationLabel = `Plan de ${selectedMonthPlan} ${selectedMonthPlan === 1 ? 'mes' : 'meses'}`;
+    } else {
+      durationLabel = selectedTimeSlot || "1 hora";
     }
 
     let addonsTotalCRC = 0;
@@ -376,8 +614,8 @@ document.addEventListener("DOMContentLoaded", () => {
         <span>₡${baseRateCRC.toLocaleString()}</span>
       </div>
       <div class="summary-row">
-        <span>Fecha & Horario:</span>
-        <span>${selectedDate} (${selectedTimeSlot || 'Jornada Completa'})</span>
+        <span>Modalidad & Programación:</span>
+        <span>${selectedDate} (${durationLabel})</span>
       </div>
       ${selectedAddonObjs.map(a => `
         <div class="summary-row" style="font-size: 0.84rem; color: #B8A99A;">
@@ -386,7 +624,7 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
       `).join("")}
       <div class="summary-row" style="color: var(--gold-warm);">
-        <span>Descuento de Membresía (${currentUser.loyaltyTier} - ${currentUser.discountRate * 100}%):</span>
+        <span>Descuento de Socio (${currentUser.loyaltyTier} - ${currentUser.discountRate * 100}%):</span>
         <span>-₡${discountCRC.toLocaleString()}</span>
       </div>
       <div class="summary-row total">
@@ -413,7 +651,27 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
+  // Instant Demo SINPE Vouchers
   let uploadedVoucherUrl = "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=600&q=80";
+  window.loadDemoVoucher = function(type) {
+    if (type === "bac") {
+      uploadedVoucherUrl = "https://images.unsplash.com/photo-1554224154-26032ffc0d07?auto=format&fit=crop&w=600&q=80";
+      document.getElementById("sinpeRefInput").value = "BAC-" + Math.floor(100000 + Math.random() * 900000);
+      document.getElementById("sinpeUploadLabel").innerHTML = `
+        <div style="color: var(--sage-green); font-weight: 700;">✓ Comprobante Demo BAC San José Vinculado</div>
+        <div style="font-size: 0.8rem; color: #B8A99A;">transferencia_bac_verificada.jpg (184 KB)</div>
+      `;
+    } else {
+      uploadedVoucherUrl = "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=600&q=80";
+      document.getElementById("sinpeRefInput").value = "BNCR-" + Math.floor(100000 + Math.random() * 900000);
+      document.getElementById("sinpeUploadLabel").innerHTML = `
+        <div style="color: var(--sage-green); font-weight: 700;">✓ Comprobante Demo Banco Nacional Vinculado</div>
+        <div style="font-size: 0.8rem; color: #B8A99A;">recibo_sinpe_bncr.pdf (210 KB)</div>
+      `;
+    }
+    showToast("✓ Comprobante bancario simulado cargado con éxito.", "success");
+  };
+
   const voucherInput = document.getElementById("sinpeFile");
   if (voucherInput) {
     voucherInput.addEventListener("change", (e) => {
@@ -423,7 +681,7 @@ document.addEventListener("DOMContentLoaded", () => {
         reader.onload = (event) => {
           uploadedVoucherUrl = event.target.result;
           document.getElementById("sinpeUploadLabel").innerHTML = `
-            <div style="color: var(--sage-green); font-weight: 700;">✓ Comprobante cargado exitosamente</div>
+            <div style="color: var(--sage-green); font-weight: 700;">✓ Archivo cargado exitosamente</div>
             <div style="font-size: 0.8rem; color: #B8A99A;">${file.name} (${(file.size / 1024).toFixed(1)} KB)</div>
           `;
         };
@@ -432,9 +690,11 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Payment Execution
   window.processBookingPayment = function() {
+    const btn = document.getElementById("btnFinalizeBooking");
     const bookingId = "RES-" + Math.floor(1000 + Math.random() * 9000);
-    const times = selectedTimeSlot ? selectedTimeSlot.split(" - ") : ["08:00", "17:00"];
+    const times = selectedTimeSlot ? selectedTimeSlot.split(" - ") : ["08:00", "18:00"];
 
     let sinpeRef = null;
     let initialStatus = "confirmed";
@@ -448,6 +708,20 @@ document.addEventListener("DOMContentLoaded", () => {
       initialStatus = "pending_sinpe";
     }
 
+    if (currentPaymentMethod === "card") {
+      btn.innerHTML = "⏳ Procesando con pasarela Odoo...";
+      btn.disabled = true;
+      setTimeout(() => {
+        btn.innerHTML = "Confirmar &amp; Finalizar Reserva ➔";
+        btn.disabled = false;
+        finalizeBookingCreation(bookingId, times, sinpeRef, initialStatus);
+      }, 700);
+    } else {
+      finalizeBookingCreation(bookingId, times, sinpeRef, initialStatus);
+    }
+  };
+
+  function finalizeBookingCreation(bookingId, times, sinpeRef, initialStatus) {
     const newBooking = {
       id: bookingId,
       spaceId: selectedSpace.id,
@@ -479,6 +753,21 @@ document.addEventListener("DOMContentLoaded", () => {
     bookings.unshift(newBooking);
     NexusStorage.saveBookings(bookings);
 
+    // Add alert notification for Admin
+    if (initialStatus === "pending_sinpe") {
+      const notifs = NexusStorage.getNotifications();
+      notifs.unshift({
+        id: "notif-" + Date.now(),
+        title: "Nuevo Pago SINPE Recibido",
+        message: `Reserva ${bookingId} (${currentUser.name}) requiere validación. SLA de 30m activo.`,
+        time: "Justo ahora",
+        unread: true,
+        link: "admin.html#secSla"
+      });
+      NexusStorage.saveNotifications(notifs);
+      initNotificationBell();
+    }
+
     const todayStr = new Date().toISOString().split("T")[0];
     if (selectedDate === todayStr) {
       const spaces = NexusStorage.getSpaces();
@@ -490,7 +779,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     showSuccessPass(newBooking);
-  };
+  }
 
   function showSuccessPass(booking) {
     document.querySelectorAll(".modal-step-content").forEach(el => el.style.display = "none");
@@ -531,7 +820,6 @@ document.addEventListener("DOMContentLoaded", () => {
     container.innerHTML = `
       <svg viewBox="0 0 100 100" width="100%" height="100%" style="border-radius: 8px;">
         <rect width="100" height="100" fill="#FBF8F4"/>
-        <!-- Corner Markers in Warm Terracotta & Deep Charcoal -->
         <rect x="10" y="10" width="22" height="22" fill="#241C18"/>
         <rect x="14" y="14" width="14" height="14" fill="#FBF8F4"/>
         <rect x="17" y="17" width="8" height="8" fill="#E07A5F"/>
@@ -544,7 +832,6 @@ document.addEventListener("DOMContentLoaded", () => {
         <rect x="14" y="72" width="14" height="14" fill="#FBF8F4"/>
         <rect x="17" y="75" width="8" height="8" fill="#E07A5F"/>
 
-        <!-- Warm Data blocks -->
         <rect x="38" y="12" width="6" height="6" fill="#241C18"/>
         <rect x="48" y="18" width="6" height="6" fill="#241C18"/>
         <rect x="38" y="26" width="8" height="6" fill="#241C18"/>
@@ -563,6 +850,11 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
   }
 
+  window.sendWhatsappConfirmation = function() {
+    alert("Simulación de Envío a WhatsApp:\n\n📱 Mensaje generado:\n'Hola " + currentUser.name + ", tu reserva en NEXUS (" + selectedSpace.name + ") está agendada. Presenta tu código QR en recepción al llegar. Teléfono concierge: +506 8888-6398.'");
+  };
+
+  // Setup Client Portal Events
   function setupClientPortalEvents() {
     const navReservations = document.getElementById("navMyReservations");
     if (navReservations) {
@@ -629,6 +921,7 @@ document.addEventListener("DOMContentLoaded", () => {
     modal.classList.add("open");
   };
 
+  // Reschedule Logic
   let currentRescheduleBookingId = null;
   window.openRescheduleModal = function(bookingId) {
     currentRescheduleBookingId = bookingId;
@@ -672,34 +965,71 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  function openClientProfileModal() {
-    const modal = document.getElementById("profileModal");
+  // AUTH MODAL & ROLE SWITCHING (ADMIN VS CLIENT)
+  window.openAuthModal = function() {
+    const modal = document.getElementById("authModal");
     if (!modal) return;
-    document.getElementById("profName").value = currentUser.name;
-    document.getElementById("profId").value = currentUser.idNumber;
-    document.getElementById("profEmail").value = currentUser.email;
-    document.getElementById("profPhone").value = currentUser.phone;
-    document.getElementById("profCompany").value = currentUser.company;
-    document.getElementById("profTier").value = currentUser.loyaltyTier;
-    document.getElementById("profHours").textContent = `${currentUser.totalHoursBooked} horas acumuladas`;
+
+    // Render registered clients list
+    const clients = NexusStorage.getClients();
+    const container = document.getElementById("authClientsList");
+    if (container) {
+      container.innerHTML = clients.map(c => `
+        <div class="user-select-card ${c.id === currentUser.id ? 'active' : ''}" onclick="selectClientAuth('${c.id}')">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div class="user-avatar">${c.name.charAt(0)}</div>
+            <div>
+              <div style="font-weight: 700; color: #FFF; font-size: 0.92rem;">${c.name}</div>
+              <div style="font-size: 0.76rem; color: #B8A99A;">${c.company} · ${c.phone}</div>
+            </div>
+          </div>
+          <span class="user-tier-badge">⭐ ${c.loyaltyTier}</span>
+        </div>
+      `).join("");
+    }
 
     modal.classList.add("open");
-  }
-
-  window.closeProfileModal = function() {
-    document.getElementById("profileModal").classList.remove("open");
   };
 
-  window.saveClientProfile = function() {
-    currentUser.name = document.getElementById("profName").value.trim();
-    currentUser.idNumber = document.getElementById("profId").value.trim();
-    currentUser.email = document.getElementById("profEmail").value.trim();
-    currentUser.phone = document.getElementById("profPhone").value.trim();
-    currentUser.company = document.getElementById("profCompany").value.trim();
-    NexusStorage.setCurrentUser(currentUser);
-    initUserBadge();
-    closeProfileModal();
-    showToast("✓ Perfil de socio actualizado.", "success");
+  window.closeAuthModal = function() {
+    document.getElementById("authModal").classList.remove("open");
+  };
+
+  window.switchAuthTab = function(role) {
+    if (role === "admin") {
+      document.getElementById("authTabAdmin").classList.add("active");
+      document.getElementById("authTabClient").classList.remove("active");
+      document.getElementById("authContentAdmin").style.display = "block";
+      document.getElementById("authContentClient").style.display = "none";
+    } else {
+      document.getElementById("authTabClient").classList.add("active");
+      document.getElementById("authTabAdmin").classList.remove("active");
+      document.getElementById("authContentAdmin").style.display = "none";
+      document.getElementById("authContentClient").style.display = "block";
+    }
+  };
+
+  window.loginAsAdmin = function() {
+    NexusStorage.setAuthRole("admin");
+    closeAuthModal();
+    showToast("👑 Sesión de Gerencia iniciada. Redirigiendo al panel de control...", "success");
+    setTimeout(() => {
+      window.location.href = "admin.html";
+    }, 600);
+  };
+
+  window.selectClientAuth = function(clientId) {
+    const client = NexusStorage.getClients().find(c => c.id === clientId);
+    if (client) {
+      currentUser = client;
+      currentRole = "client";
+      NexusStorage.setCurrentUser(client);
+      NexusStorage.setAuthRole("client");
+      initUserBadge();
+      renderSpacesCatalog();
+      closeAuthModal();
+      showToast(`✓ Sesión activa como ${client.name} (${client.loyaltyTier}).`, "success");
+    }
   };
 
   window.showToast = function(message, type = "info") {
