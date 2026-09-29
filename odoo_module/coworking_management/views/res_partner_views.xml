@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_partner_coworking_form" model="ir.ui.view">
+        <field name="name">res.partner.coworking.form</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='internal_notes']" position="after">
+                <page string="Membresía &amp; Coworking" name="coworking_page">
+                    <group>
+                        <group string="Fidelidad y Descuentos">
+                            <field name="coworking_loyalty_tier"/>
+                            <field name="coworking_discount_rate" widget="percentage"/>
+                            <field name="coworking_total_hours" widget="float_time"/>
+                        </group>
+                        <group string="Identificación y Seguridad">
+                            <field name="identification_number"/>
+                            <field name="emergency_contact"/>
+                        </group>
+                    </group>
+                    <field name="coworking_booking_ids" readonly="1">
+                        <list>
+                            <field name="name"/>
+                            <field name="space_id"/>
+                            <field name="date_start"/>
+                            <field name="duration_hours" widget="float_time"/>
+                            <field name="amount_total" widget="monetary"/>
+                            <field name="state" widget="badge"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Action for Registered Coworking Clients -->
+    <record id="action_coworking_clients" model="ir.actions.act_window">
+        <field name="name">Clientes Registrados &amp; Fidelidad</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="context">{'default_customer_rank': 1}</field>
+    </record>
+</odoo>

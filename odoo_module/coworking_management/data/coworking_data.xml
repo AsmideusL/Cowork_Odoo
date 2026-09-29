@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Sequence for Coworking Bookings -->
+        <record id="seq_coworking_booking" model="ir.sequence">
+            <field name="name">Secuencia de Reservas Coworking</field>
+            <field name="code">coworking.booking</field>
+            <field name="prefix">COW/%(year)s/</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!-- Demo Addon Services -->
+        <record id="addon_catering" model="coworking.addon">
+            <field name="name">Servicio Barista &amp; Catering Gourmet</field>
+            <field name="icon">☕</field>
+            <field name="price">4500.0</field>
+            <field name="billing_unit">per_person</field>
+            <field name="description">Café de especialidad, té artesanal y bocadillos dulces/salados.</field>
+        </record>
+
+        <record id="addon_projector" model="coworking.addon">
+            <field name="name">Proyector Láser 4K &amp; Pantalla Motorizada</field>
+            <field name="icon">📽️</field>
+            <field name="price">6000.0</field>
+            <field name="billing_unit">per_session</field>
+            <field name="description">Proyección de ultra alta definición con conectividad inalámbrica HDMI/AirPlay.</field>
+        </record>
+
+        <record id="addon_parking" model="coworking.addon">
+            <field name="name">Espacio de Parqueo Subterráneo VIP</field>
+            <field name="icon">🚗</field>
+            <field name="price">3500.0</field>
+            <field name="billing_unit">per_day</field>
+            <field name="description">Estacionamiento seguro bajo techo con vigilancia 24/7 y acceso directo a elevador.</field>
+        </record>
+
+        <record id="addon_tech" model="coworking.addon">
+            <field name="name">Asistencia Técnica In-Room Dedicada</field>
+            <field name="icon">💻</field>
+            <field name="price">5000.0</field>
+            <field name="billing_unit">per_session</field>
+            <field name="description">Técnico especializado en sala para soporte en videoconferencias y streaming.</field>
+        </record>
+
+        <!-- Demo Coworking Spaces -->
+        <record id="space_horizon" model="coworking.space">
+            <field name="name">Sala Boardroom Horizon</field>
+            <field name="code">SALA-HORIZON</field>
+            <field name="space_type">meeting</field>
+            <field name="capacity">12</field>
+            <field name="floor_location">Piso 4 - Ala Este</field>
+            <field name="price_hour">15000.0</field>
+            <field name="price_day">95000.0</field>
+            <field name="price_month">1200000.0</field>
+            <field name="state">available</field>
+            <field name="description">Sala insigne con mesa de nogal macizo, sistema de videoconferencia Polycom 4K y vista panorámica.</field>
+            <field name="addon_ids" eval="[(6, 0, [ref('addon_catering'), ref('addon_projector')])]"/>
+        </record>
+
+        <record id="space_alpha" model="coworking.space">
+            <field name="name">Private Office Alpha</field>
+            <field name="code">OFIC-ALPHA</field>
+            <field name="space_type">private</field>
+            <field name="capacity">5</field>
+            <field name="floor_location">Piso 4 - Oficina 402</field>
+            <field name="price_hour">12000.0</field>
+            <field name="price_day">75000.0</field>
+            <field name="price_month">850000.0</field>
+            <field name="state">available</field>
+            <field name="description">Oficina privada amoblada con mobiliario ergonómico Herman Miller y cerradura inteligente.</field>
+            <field name="addon_ids" eval="[(6, 0, [ref('addon_parking')])]"/>
+        </record>
+
+        <record id="space_pod" model="coworking.space">
+            <field name="name">Focus Pod Oasis</field>
+            <field name="code">POD-OASIS</field>
+            <field name="space_type">pod</field>
+            <field name="capacity">1</field>
+            <field name="floor_location">Piso 4 - Zona Silenciosa</field>
+            <field name="price_hour">5000.0</field>
+            <field name="price_day">28000.0</field>
+            <field name="price_month">320000.0</field>
+            <field name="state">available</field>
+            <field name="description">Cabina acústica individual de alta insonorización (-35dB) con luz regulable y ventilación activa.</field>
+        </record>
+
+        <record id="space_hotdesk" model="coworking.space">
+            <field name="name">Hot Desk Flex Lounge</field>
+            <field name="code">HOT-DESK</field>
+            <field name="space_type">coworking</field>
+            <field name="capacity">25</field>
+            <field name="floor_location">Piso 4 - Open Space &amp; Terraza</field>
+            <field name="price_hour">3000.0</field>
+            <field name="price_day">16000.0</field>
+            <field name="price_month">180000.0</field>
+            <field name="state">available</field>
+            <field name="description">Área abierta colaborativa con acceso ilimitado a barra de café y terraza lounge.</field>
+        </record>
+    </data>
+</odoo>

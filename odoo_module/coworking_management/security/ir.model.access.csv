@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_coworking_space_user,coworking.space.user,model_coworking_space,group_coworking_user,1,0,0,0
+access_coworking_space_manager,coworking.space.manager,model_coworking_space,group_coworking_manager,1,1,1,1
+access_coworking_addon_user,coworking.addon.user,model_coworking_addon,group_coworking_user,1,0,0,0
+access_coworking_addon_manager,coworking.addon.manager,model_coworking_addon,group_coworking_manager,1,1,1,1
+access_coworking_booking_user,coworking.booking.user,model_coworking_booking,group_coworking_user,1,1,1,0
+access_coworking_booking_manager,coworking.booking.manager,model_coworking_booking,group_coworking_manager,1,1,1,1

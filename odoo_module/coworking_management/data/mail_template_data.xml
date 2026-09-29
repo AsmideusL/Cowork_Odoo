@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Template: Confirmación de Reserva & Pase Digital QR -->
+        <record id="email_template_booking_confirmed" model="mail.template">
+            <field name="name">Coworking: Confirmación de Reserva &amp; Pase QR</field>
+            <field name="model_id" ref="coworking_management.model_coworking_booking"/>
+            <field name="subject">¡Reserva Confirmada en NEXUS Coworking! Ref: {{ object.name }}</field>
+            <field name="email_to">{{ object.partner_id.email }}</field>
+            <field name="body_html" type="html">
+<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff;">
+    <div style="text-align: center; margin-bottom: 24px;">
+        <h2 style="color: #10b981; margin: 0;">¡Tu Reserva está Confirmada!</h2>
+        <p style="color: #64748b; margin-top: 4px;">Código de Reserva: <strong>{{ object.name }}</strong></p>
+    </div>
+
+    <div style="background-color: #f8fafc; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+        <h3 style="color: #0f172a; margin-top: 0; font-size: 16px;">Detalles del Espacio Reservado</h3>
+        <p style="margin: 4px 0;"><strong>Espacio:</strong> {{ object.space_id.name }}</p>
+        <p style="margin: 4px 0;"><strong>Ubicación:</strong> {{ object.space_id.floor_location }}</p>
+        <p style="margin: 4px 0;"><strong>Inicio:</strong> {{ object.date_start }}</p>
+        <p style="margin: 4px 0;"><strong>Fin:</strong> {{ object.date_end }}</p>
+        <p style="margin: 4px 0;"><strong>Duración:</strong> {{ object.duration_hours }} horas</p>
+        <p style="margin: 4px 0;"><strong>Total Pagado:</strong> {{ object.amount_total }} {{ object.currency_id.name }}</p>
+    </div>
+
+    <div style="text-align: center; border: 2px dashed #10b981; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+        <div style="font-size: 13px; color: #64748b; text-transform: uppercase; font-weight: bold;">Tu Token Digital de Acceso</div>
+        <div style="font-size: 20px; font-weight: bold; color: #0f172a; letter-spacing: 2px; margin: 10px 0;">
+            {{ object.qr_code_token }}
+        </div>
+        <p style="font-size: 12px; color: #94a3b8; margin: 0;">Presenta este código o el QR en recepción al llegar a nuestras instalaciones.</p>
+    </div>
+
+    <p style="font-size: 13px; color: #64748b; line-height: 1.5;">
+        Si requieres reprogramar tu horario, puedes hacerlo desde tu portal de cliente con antelación sujeto a disponibilidad.
+    </p>
+
+    <div style="text-align: center; margin-top: 24px; font-size: 12px; color: #94a3b8;">
+        NEXUS Coworking &amp; Spaces · San José, Costa Rica
+    </div>
+</div>
+            </field>
+        </record>
+
+        <!-- Template: Alerta a Gerencia por Comprobante SINPE Pendiente -->
+        <record id="email_template_sinpe_pending_alert" model="mail.template">
+            <field name="name">Coworking: Alerta SLA Comprobante SINPE Pendiente</field>
+            <field name="model_id" ref="coworking_management.model_coworking_booking"/>
+            <field name="subject">⚠️ Nuevo Pago SINPE por Validar (SLA 30m) - Ref: {{ object.name }}</field>
+            <field name="email_to">{{ object.company_id.email or 'admin@nexusspaces.com' }}</field>
+            <field name="body_html" type="html">
+<div style="font-family: Arial, sans-serif; padding: 20px; background-color: #fffbeb; border: 1px solid #fde68a; border-radius: 8px;">
+    <h3 style="color: #b45309; margin-top: 0;">Nuevo Comprobante SINPE Móvil Recibido</h3>
+    <p>El cliente <strong>{{ object.partner_id.name }}</strong> (Tel: {{ object.partner_phone }}) ha enviado un comprobante de pago por <strong>{{ object.amount_total }} {{ object.currency_id.name }}</strong>.</p>
+    <p><strong>Referencia indicada:</strong> {{ object.sinpe_reference or 'Sin especificar' }}</p>
+    <p><strong>Espacio solicitado:</strong> {{ object.space_id.name }} ({{ object.date_start }} a {{ object.date_end }})</p>
+    <p style="color: #b45309; font-weight: bold;">Por favor ingrese a la Bandeja de Validación SINPE en Odoo para verificar y aprobar antes de que expire el SLA de 30 minutos.</p>
+</div>
+            </field>
+        </record>
+
+        <!-- Template: Notificación de Rechazo de Comprobante -->
+        <record id="email_template_booking_rejected" model="mail.template">
+            <field name="name">Coworking: Notificación Comprobante SINPE Rechazado</field>
+            <field name="model_id" ref="coworking_management.model_coworking_booking"/>
+            <field name="subject">Actualización sobre tu reserva en NEXUS: Ref {{ object.name }}</field>
+            <field name="email_to">{{ object.partner_id.email }}</field>
+            <field name="body_html" type="html">
+<div style="font-family: Arial, sans-serif; padding: 20px; background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 8px;">
+    <h3 style="color: #991b1b; margin-top: 0;">Comprobante de Pago No Validado</h3>
+    <p>Estimado/a <strong>{{ object.partner_id.name }}</strong>,</p>
+    <p>Lamentamos informarle que no fue posible validar su comprobante SINPE para la reserva <strong>{{ object.name }}</strong> en el espacio <em>{{ object.space_id.name }}</em>.</p>
+    <p>Por favor contáctenos directamente a nuestro WhatsApp de soporte o intente realizar una nueva reserva con el comprobante bancario correspondiente.</p>
+</div>
+            </field>
+        </record>
+    </data>
+</odoo>

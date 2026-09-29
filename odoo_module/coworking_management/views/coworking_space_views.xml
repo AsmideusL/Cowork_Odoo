@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Tree View -->
+    <record id="view_coworking_space_tree" model="ir.ui.view">
+        <field name="name">coworking.space.tree</field>
+        <field name="model">coworking.space</field>
+        <field name="arch" type="xml">
+            <list string="Espacios &amp; Oficinas">
+                <field name="name"/>
+                <field name="space_type"/>
+                <field name="capacity"/>
+                <field name="floor_location"/>
+                <field name="price_hour" widget="monetary"/>
+                <field name="price_day" widget="monetary"/>
+                <field name="price_month" widget="monetary"/>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="state" widget="badge" 
+                       decoration-success="state == 'available'" 
+                       decoration-danger="state == 'occupied'" 
+                       decoration-warning="state == 'maintenance'"/>
+                <field name="booking_count"/>
+                <field name="total_revenue" widget="monetary"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_coworking_space_form" model="ir.ui.view">
+        <field name="name">coworking.space.form</field>
+        <field name="model">coworking.space</field>
+        <field name="arch" type="xml">
+            <form string="Espacio de Coworking">
+                <header>
+                    <field name="state" widget="statusbar" statusbar_visible="available,occupied,maintenance"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_space_calendar" type="object" 
+                                class="oe_stat_button" icon="fa-calendar">
+                            <field name="booking_count" widget="statinfo" string="Ver Calendario"/>
+                        </button>
+                    </div>
+                    <field name="image_1920" widget="image" class="oe_avatar" options="{'preview_image': 'image_1920'}"/>
+                    <div class="oe_title">
+                        <label for="name" class="oe_edit_only"/>
+                        <h1><field name="name" placeholder="Ej. Sala Boardroom Horizon"/></h1>
+                    </div>
+                    <group>
+                        <group string="Detalles y Ubicación">
+                            <field name="space_type"/>
+                            <field name="code"/>
+                            <field name="capacity"/>
+                            <field name="floor_location"/>
+                            <field name="active"/>
+                        </group>
+                        <group string="Tarifas (Moneda Oficial)">
+                            <field name="currency_id" invisible="1"/>
+                            <field name="price_hour" widget="monetary"/>
+                            <field name="price_day" widget="monetary"/>
+                            <field name="price_month" widget="monetary"/>
+                            <field name="total_revenue" widget="monetary"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Descripción y Amenidades">
+                            <group>
+                                <field name="addon_ids" widget="many2many_tags" placeholder="Servicios incluidos o disponibles..."/>
+                            </group>
+                            <field name="description" placeholder="Describa el equipamiento tecnológico, pizarrones, vistas, conectividad..."/>
+                        </page>
+                        <page string="Historial de Reservas">
+                            <field name="booking_ids" readonly="1">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="partner_id"/>
+                                    <field name="date_start"/>
+                                    <field name="date_end"/>
+                                    <field name="payment_method"/>
+                                    <field name="amount_total" widget="monetary"/>
+                                    <field name="state" widget="badge"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Kanban View -->
+    <record id="view_coworking_space_kanban" model="ir.ui.view">
+        <field name="name">coworking.space.kanban</field>
+        <field name="model">coworking.space</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_mobile">
+                <field name="id"/>
+                <field name="name"/>
+                <field name="space_type"/>
+                <field name="capacity"/>
+                <field name="price_hour"/>
+                <field name="currency_id"/>
+                <field name="state"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="d-flex align-items-center mb-2">
+                            <field name="image_1920" widget="image" options="{'size': [64, 64]}" class="me-2 rounded"/>
+                            <div>
+                                <h5 class="mb-0"><field name="name"/></h5>
+                                <span class="text-muted"><field name="space_type"/> · <field name="capacity"/> Pax</span>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mt-2">
+                            <span class="fw-bold"><field name="price_hour" widget="monetary"/> / hora</span>
+                            <field name="state" widget="badge" 
+                                   decoration-success="state == 'available'" 
+                                   decoration-danger="state == 'occupied'"/>
+                        </div>
+                        <div class="mt-2 text-end">
+                            <a type="object" name="action_view_space_calendar" class="btn btn-sm btn-outline-primary">
+                                📅 Calendario Sala
+                            </a>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_coworking_space" model="ir.actions.act_window">
+        <field name="name">Espacios &amp; Oficinas</field>
+        <field name="res_model">coworking.space</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Cree su primer espacio u oficina de coworking
+            </p>
+        </field>
+    </record>
+</odoo>

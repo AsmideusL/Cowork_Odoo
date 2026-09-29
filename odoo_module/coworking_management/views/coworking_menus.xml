@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Root Menu -->
+    <menuitem id="menu_coworking_root"
+              name="Coworking &amp; Espacios"
+              web_icon="coworking_management,static/description/icon.png"
+              sequence="20"/>
+
+    <!-- Operaciones & Reservas -->
+    <menuitem id="menu_coworking_operations"
+              name="Operaciones &amp; Reservas"
+              parent="menu_coworking_root"
+              sequence="10"/>
+
+    <menuitem id="menu_coworking_booking_all"
+              name="Todas las Reservas"
+              parent="menu_coworking_operations"
+              action="action_coworking_booking_all"
+              sequence="10"/>
+
+    <menuitem id="menu_coworking_booking_sinpe"
+              name="Validación SINPE &amp; SLA"
+              parent="menu_coworking_operations"
+              action="action_coworking_booking_sinpe_pending"
+              sequence="20"/>
+
+    <menuitem id="menu_coworking_booking_calendar"
+              name="Calendario Central de Espacios"
+              parent="menu_coworking_operations"
+              action="action_coworking_booking_calendar_only"
+              sequence="30"/>
+
+    <!-- Instalaciones -->
+    <menuitem id="menu_coworking_spaces"
+              name="Instalaciones"
+              parent="menu_coworking_root"
+              sequence="20"/>
+
+    <menuitem id="menu_coworking_space_list"
+              name="Espacios &amp; Oficinas"
+              parent="menu_coworking_spaces"
+              action="action_coworking_space"
+              sequence="10"/>
+
+    <!-- Clientes -->
+    <menuitem id="menu_coworking_clients_parent"
+              name="Clientes &amp; Socios"
+              parent="menu_coworking_root"
+              sequence="30"/>
+
+    <menuitem id="menu_coworking_clients"
+              name="Clientes Registrados &amp; Fidelidad"
+              parent="menu_coworking_clients_parent"
+              action="action_coworking_clients"
+              sequence="10"/>
+
+    <!-- Informes -->
+    <menuitem id="menu_coworking_reporting_parent"
+              name="Informes &amp; Métricas"
+              parent="menu_coworking_root"
+              sequence="40"/>
+
+    <menuitem id="menu_coworking_reporting_demand"
+              name="Demanda por Sala &amp; Ingresos"
+              parent="menu_coworking_reporting_parent"
+              action="action_coworking_reporting"
+              sequence="10"/>
+
+    <!-- Configuración -->
+    <menuitem id="menu_coworking_config_parent"
+              name="Configuración"
+              parent="menu_coworking_root"
+              sequence="50"/>
+
+    <menuitem id="menu_coworking_config_addons"
+              name="Servicios Adicionales (Upselling)"
+              parent="menu_coworking_config_parent"
+              action="action_coworking_addon"
+              sequence="10"/>
+</odoo>

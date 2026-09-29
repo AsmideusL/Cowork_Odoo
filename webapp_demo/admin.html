@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Administrativo & SLA | NEXUS Coworking</title>
+  <meta name="description" content="Centro de control administrativo y gerencial para coworking: validación de pagos SINPE con SLA, gestión de calendarios por sala y analíticas de ocupación.">
+  <link rel="stylesheet" href="css/style.css">
+  <!-- Chart.js for executive analytics -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body style="background-color: #080C14;">
+
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <div class="container nav-inner">
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <a href="index.html" class="brand">
+          <div class="brand-icon">N</div>
+          <span>NEXUS <span style="font-weight: 300; font-size: 1rem; opacity: 0.8;">ADMIN</span></span>
+        </a>
+        <span class="admin-badge-header">⚡ Gerencia & Operaciones Odoo 19</span>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <a href="index.html" class="btn btn-secondary btn-sm">⬅ Ver Sitio Público</a>
+        <button class="btn btn-primary btn-sm" onclick="location.reload()">🔄 Actualizar Datos</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container" style="padding-top: 36px; padding-bottom: 80px;">
+
+    <!-- Top KPI Matrix -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">Reservas Totales</div>
+        <div class="kpi-value" id="kpiTotalBookings">0</div>
+        <div class="kpi-trend">↑ +14% vs semana anterior</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Ingresos del Mes</div>
+        <div class="kpi-value" id="kpiTotalRevenue">₡0</div>
+        <div class="kpi-trend">↑ Meta superada (104%)</div>
+      </div>
+      <div class="kpi-card amber">
+        <div class="kpi-label">Pendientes SINPE</div>
+        <div class="kpi-value" id="kpiPendingSinpe" style="color: #F59E0B;">0</div>
+        <div style="font-size: 0.75rem; color: #FBBF24;">Requiere validación manual</div>
+      </div>
+      <div class="kpi-card purple">
+        <div class="kpi-label">Tasa de Ocupación</div>
+        <div class="kpi-value" id="kpiOccupancyRate">86%</div>
+        <div class="kpi-trend">Salas ejecutivas en alta demanda</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Tiempo Promedio SLA</div>
+        <div class="kpi-value" id="kpiAvgSla" style="color: #06B6D4;">7.4 min</div>
+        <div style="font-size: 0.75rem; color: #10B981;">✓ Objetivo &lt; 15 min cumplido</div>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs for Admin Sections -->
+    <div style="display: flex; gap: 12px; margin-bottom: 28px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 12px;">
+      <button class="toggle-pill admin-nav-item active" data-target="secSla">⏱️ Bandeja de Aprobación SINPE & SLA</button>
+      <button class="toggle-pill admin-nav-item" data-target="secCalendars">📅 Calendarios Individuales por Sala</button>
+      <button class="toggle-pill admin-nav-item" data-target="secBookings">📋 Todas las Reservas & Modificaciones</button>
+      <button class="toggle-pill admin-nav-item" data-target="secAnalytics">📊 Informes & Métricas de Demanda</button>
+    </div>
+
+    <!-- SECTION 1: SLA SINPE APPROVALS QUEUE -->
+    <section class="admin-section" id="secSla">
+      <div class="sla-alert-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <div>
+            <h2 style="color: #FFF; font-size: 1.3rem;">Bandeja de Validación de Comprobantes SINPE Móvil</h2>
+            <p style="color: #9CA3AF; font-size: 0.88rem;">
+              Monitoreo de SLA en tiempo real: revise el comprobante bancario, verifique con la cuenta bancaria y apruebe con un clic.
+            </p>
+          </div>
+          <span class="user-tier-badge" style="background: rgba(245, 158, 11, 0.2); color: #F59E0B;">SLA Máximo: 30 minutos</span>
+        </div>
+
+        <div id="slaQueueContainer">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: ROOM CALENDARS VIEWER -->
+    <section class="admin-section" id="secCalendars" style="display: none;">
+      <div class="floorplan-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <h2 style="color: #FFF; font-size: 1.3rem;">Calendario por Espacio de Trabajo</h2>
+            <p style="color: #9CA3AF; font-size: 0.88rem;">
+              Cada oficina cuenta con su propio calendario para prevenir solapamientos e informar a Gerencia quién y por cuánto tiempo reservó.
+            </p>
+          </div>
+          <div style="min-width: 280px;">
+            <select id="adminRoomCalendarSelect" class="field-select" style="width: 100%;">
+              <!-- Injected by JS -->
+            </select>
+          </div>
+        </div>
+
+        <div id="adminRoomCalendarView">
+          <!-- Calendar Matrix by JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3: ALL BOOKINGS & RESCHEDULE TABLE -->
+    <section class="admin-section" id="secBookings" style="display: none;">
+      <div class="floorplan-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <div>
+            <h2 style="color: #FFF; font-size: 1.3rem;">Gestión Central de Reservas</h2>
+            <p style="color: #9CA3AF; font-size: 0.88rem;">
+              Control administrativo para reprogramar fechas/horas o cancelar reservas a solicitud del cliente.
+            </p>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>ID Reserva</th>
+                <th>Cliente / Empresa</th>
+                <th>Espacio Reservado</th>
+                <th>Fecha & Horario</th>
+                <th>Total / Método</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="adminBookingsTbody">
+              <!-- Injected by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 4: ANALYTICS & DEMAND CHARTS -->
+    <section class="admin-section" id="secAnalytics" style="display: none;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 24px; margin-bottom: 30px;">
+        <!-- Chart 1: Rooms in high demand -->
+        <div class="floorplan-card" style="margin-bottom: 0;">
+          <h3 style="color: #FFF; font-size: 1.15rem; margin-bottom: 6px;">📈 Salas Más Solicitadas (Horas Reservadas)</h3>
+          <p style="color: #9CA3AF; font-size: 0.82rem; margin-bottom: 16px;">Métrica de popularidad por espacio para ajuste dinámico de tarifas.</p>
+          <canvas id="chartRoomsDemand" height="240"></canvas>
+        </div>
+
+        <!-- Chart 2: Revenue Mix -->
+        <div class="floorplan-card" style="margin-bottom: 0;">
+          <h3 style="color: #FFF; font-size: 1.15rem; margin-bottom: 6px;">💰 Distribución de Ingresos por Modalidad</h3>
+          <p style="color: #9CA3AF; font-size: 0.82rem; margin-bottom: 16px;">Comparativa: Reservas por Horas vs Días vs Planes Mensuales.</p>
+          <canvas id="chartRevenueMix" height="240"></canvas>
+        </div>
+      </div>
+
+      <!-- Top Loyal Clients Table -->
+      <div class="floorplan-card">
+        <h3 style="color: #FFF; font-size: 1.15rem; margin-bottom: 6px;">⭐ Top Clientes Frecuentes & Respaldo de Seguridad</h3>
+        <p style="color: #9CA3AF; font-size: 0.82rem; margin-bottom: 16px;">
+          Registro de clientes con identificación completa, empresa, contacto de emergencia y acumulación de horas.
+        </p>
+        <div id="topClientsList">
+          <!-- Injected by JS -->
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- VOUCHER ZOOM INSPECTION MODAL -->
+  <div class="modal-backdrop" id="voucherModal">
+    <div class="modal-card" style="max-width: 680px;">
+      <div class="modal-header">
+        <h3 style="color: #FFF; font-size: 1.15rem;">🔍 Inspección de Comprobante SINPE Móvil</h3>
+        <button class="modal-close" onclick="closeVoucherModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="text-align: center; margin-bottom: 16px;">
+          <img id="modalVoucherImg" src="" style="max-width: 100%; max-height: 380px; border-radius: 8px; border: 1px solid var(--border-subtle); object-fit: contain; box-shadow: var(--shadow-lg);">
+        </div>
+        <div id="modalVoucherDetails">
+          <!-- Dynamic details -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/mock_data.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

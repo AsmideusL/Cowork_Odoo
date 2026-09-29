@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- CALENDAR VIEW (Crucial Requirement) -->
+    <record id="view_coworking_booking_calendar" model="ir.ui.view">
+        <field name="name">coworking.booking.calendar</field>
+        <field name="model">coworking.booking</field>
+        <field name="arch" type="xml">
+            <calendar string="Calendario de Espacios Coworking" 
+                      date_start="date_start" 
+                      date_stop="date_end" 
+                      color="space_id" 
+                      mode="week" 
+                      quick_create="0">
+                <field name="partner_id" avatar_field="image_128"/>
+                <field name="space_id"/>
+                <field name="amount_total" widget="monetary"/>
+                <field name="state"/>
+            </calendar>
+        </field>
+    </record>
+
+    <!-- LIST / TREE VIEW -->
+    <record id="view_coworking_booking_tree" model="ir.ui.view">
+        <field name="name">coworking.booking.tree</field>
+        <field name="model">coworking.booking</field>
+        <field name="arch" type="xml">
+            <list string="Reservas de Coworking" 
+                  decoration-info="state == 'draft'" 
+                  decoration-warning="state == 'pending_sinpe'" 
+                  decoration-success="state == 'confirmed'" 
+                  decoration-muted="state == 'cancelled'">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="space_id"/>
+                <field name="date_start"/>
+                <field name="date_end"/>
+                <field name="duration_hours" widget="float_time"/>
+                <field name="payment_method"/>
+                <field name="sla_status" widget="badge" 
+                       decoration-success="sla_status == 'on_time'" 
+                       decoration-warning="sla_status == 'warning'" 
+                       decoration-danger="sla_status == 'breached'"/>
+                <field name="amount_total" widget="monetary"/>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="state" widget="badge" 
+                       decoration-success="state == 'confirmed'" 
+                       decoration-warning="state == 'pending_sinpe'" 
+                       decoration-danger="state == 'cancelled'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- FORM VIEW -->
+    <record id="view_coworking_booking_form" model="ir.ui.view">
+        <field name="name">coworking.booking.form</field>
+        <field name="model">coworking.booking</field>
+        <field name="arch" type="xml">
+            <form string="Reserva de Coworking">
+                <header>
+                    <button name="action_submit_for_sinpe_approval" type="object" 
+                            string="Enviar Comprobante a Revisión" class="btn-secondary" 
+                            invisible="state != 'draft' or payment_method != 'sinpe'"/>
+                    
+                    <button name="action_approve_sinpe" type="object" 
+                            string="✓ Aprobar SINPE &amp; Emitir Factura" class="btn-primary" 
+                            invisible="state != 'pending_sinpe'"/>
+                    
+                    <button name="action_reject_sinpe" type="object" 
+                            string="Rechazar Comprobante" class="btn-danger" 
+                            invisible="state != 'pending_sinpe'"/>
+
+                    <field name="state" widget="statusbar" statusbar_visible="draft,pending_sinpe,confirmed,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <field name="invoice_id" invisible="1"/>
+                        <button name="%(account.action_move_out_invoice_type)d" type="action" 
+                                class="oe_stat_button" icon="fa-pencil-square-o" 
+                                invisible="not invoice_id">
+                            <span class="o_stat_text">Factura Generada</span>
+                        </button>
+                    </div>
+
+                    <div class="oe_title">
+                        <span class="o_form_label">Reserva</span>
+                        <h1><field name="name"/></h1>
+                    </div>
+
+                    <group>
+                        <group string="Cliente &amp; Espacio">
+                            <field name="partner_id"/>
+                            <field name="partner_vat"/>
+                            <field name="partner_phone"/>
+                            <field name="partner_email"/>
+                            <field name="space_id"/>
+                            <field name="booking_type"/>
+                        </group>
+                        <group string="Programación y Horarios">
+                            <field name="date_start"/>
+                            <field name="date_end"/>
+                            <field name="duration_hours" widget="float_time"/>
+                            <field name="qr_code_token" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Validación de Pago SINPE Móvil &amp; SLA">
+                            <group>
+                                <group string="Datos del Pago">
+                                    <field name="payment_method"/>
+                                    <field name="sinpe_reference"/>
+                                    <field name="sinpe_submitted_at" readonly="1"/>
+                                    <field name="sla_deadline" readonly="1"/>
+                                    <field name="sla_status" widget="badge" 
+                                           decoration-success="sla_status == 'on_time'" 
+                                           decoration-warning="sla_status == 'warning'" 
+                                           decoration-danger="sla_status == 'breached'"/>
+                                </group>
+                                <group string="Comprobante Bancario Adjunto">
+                                    <field name="sinpe_voucher" widget="image" class="oe_avatar" options="{'size': [200, 200]}"/>
+                                    <field name="sinpe_voucher_filename" invisible="1"/>
+                                    <field name="approved_by_id"/>
+                                    <field name="approval_date"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Servicios Extra &amp; Totales">
+                            <field name="addon_ids" widget="many2many_tags"/>
+                            <group class="oe_subtotal_footer oe_right">
+                                <field name="currency_id" invisible="1"/>
+                                <field name="amount_space" widget="monetary"/>
+                                <field name="amount_addons" widget="monetary"/>
+                                <field name="amount_discount" widget="monetary"/>
+                                <div class="oe_subtotal_footer_separator oe_inline o_td_label">
+                                    <label for="amount_total"/>
+                                </div>
+                                <field name="amount_total" nolabel="1" class="oe_subtotal_footer_separator" widget="monetary"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- GRAPH & PIVOT VIEWS (Reporting requirement) -->
+    <record id="view_coworking_booking_graph" model="ir.ui.view">
+        <field name="name">coworking.booking.graph</field>
+        <field name="model">coworking.booking</field>
+        <field name="arch" type="xml">
+            <graph string="Demanda por Sala de Coworking" type="bar">
+                <field name="space_id"/>
+                <field name="duration_hours" type="measure"/>
+                <field name="amount_total" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="view_coworking_booking_pivot" model="ir.ui.view">
+        <field name="name">coworking.booking.pivot</field>
+        <field name="model">coworking.booking</field>
+        <field name="arch" type="xml">
+            <pivot string="Análisis de Ocupación e Ingresos">
+                <field name="space_id" type="row"/>
+                <field name="booking_type" type="col"/>
+                <field name="duration_hours" type="measure"/>
+                <field name="amount_total" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- SEARCH VIEW -->
+    <record id="view_coworking_booking_search" model="ir.ui.view">
+        <field name="name">coworking.booking.search</field>
+        <field name="model">coworking.booking</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Reservas">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="space_id"/>
+                <field name="sinpe_reference"/>
+                <filter string="Pendientes Validación SINPE" name="filter_pending_sinpe" domain="[('state', '=', 'pending_sinpe')]"/>
+                <filter string="Confirmadas" name="filter_confirmed" domain="[('state', '=', 'confirmed')]"/>
+                <filter string="SLA en Alerta o Vencido" name="filter_sla_risk" domain="[('sla_status', 'in', ['warning', 'breached']), ('state', '=', 'pending_sinpe')]"/>
+                <separator/>
+                <group expand="0" string="Agrupar Por">
+                    <filter string="Espacio / Sala" name="group_by_space" context="{'group_by': 'space_id'}"/>
+                    <filter string="Estado" name="group_by_state" context="{'group_by': 'state'}"/>
+                    <filter string="Cliente" name="group_by_partner" context="{'group_by': 'partner_id'}"/>
+                    <filter string="Mes de Inicio" name="group_by_date" context="{'group_by': 'date_start:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ACTIONS -->
+    <record id="action_coworking_booking_all" model="ir.actions.act_window">
+        <field name="name">Todas las Reservas</field>
+        <field name="res_model">coworking.booking</field>
+        <field name="view_mode">calendar,list,form,graph,pivot</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No hay reservas registradas.</p>
+        </field>
+    </record>
+
+    <record id="action_coworking_booking_sinpe_pending" model="ir.actions.act_window">
+        <field name="name">Bandeja de Validación SINPE Móvil &amp; SLA</field>
+        <field name="res_model">coworking.booking</field>
+        <field name="view_mode">list,form,calendar</field>
+        <field name="domain">[('state', '=', 'pending_sinpe')]</field>
+        <field name="context">{'search_default_filter_pending_sinpe': 1}</field>
+    </record>
+
+    <record id="action_coworking_booking_calendar_only" model="ir.actions.act_window">
+        <field name="name">Calendario Central de Espacios</field>
+        <field name="res_model">coworking.booking</field>
+        <field name="view_mode">calendar,list,form</field>
+    </record>
+
+    <record id="action_coworking_reporting" model="ir.actions.act_window">
+        <field name="name">Informes &amp; Demanda de Salas</field>
+        <field name="res_model">coworking.booking</field>
+        <field name="view_mode">graph,pivot</field>
+    </record>
+</odoo>
