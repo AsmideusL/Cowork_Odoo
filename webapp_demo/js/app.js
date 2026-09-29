@@ -20,7 +20,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Sync user display in navbar & Admin indicator
   function initUserBadge() {
+    currentUser = NexusStorage.getCurrentUser();
+    currentRole = NexusStorage.getAuthRole();
+
     const userBadgeEl = document.getElementById("navUserBadge");
+    const navGuestActions = document.getElementById("navGuestActions");
+    const navUserLoggedActions = document.getElementById("navUserLoggedActions");
+    const navMyReservationsItem = document.getElementById("navMyReservationsItem");
+
+    if (!currentUser) {
+      if (navGuestActions) navGuestActions.style.display = "flex";
+      if (navUserLoggedActions) navUserLoggedActions.style.display = "none";
+      if (navMyReservationsItem) navMyReservationsItem.style.display = "none";
+      return;
+    }
+
+    if (navGuestActions) navGuestActions.style.display = "none";
+    if (navUserLoggedActions) navUserLoggedActions.style.display = "flex";
+    if (navMyReservationsItem) navMyReservationsItem.style.display = "block";
+
     if (!userBadgeEl) return;
 
     if (currentRole === "admin") {
@@ -28,19 +46,20 @@ document.addEventListener("DOMContentLoaded", () => {
         <div class="user-avatar" style="background: var(--grad-gold);">👑</div>
         <div style="text-align: left;">
           <div style="font-size: 0.85rem; font-weight: 700; color: #FFF; line-height: 1.2;">Lic. Roberto Alvarado</div>
-          <span class="user-tier-badge" style="background: rgba(224, 122, 95, 0.2); color: var(--champagne);">Gerencia Odoo</span>
+          <span class="user-tier-badge" style="background: rgba(224, 122, 95, 0.2); color: var(--champagne);">Gerencia General</span>
         </div>
       `;
     } else {
+      const initial = currentUser.name ? currentUser.name.charAt(0).toUpperCase() : "U";
       userBadgeEl.innerHTML = `
-        <div class="user-avatar">${currentUser.name.charAt(0)}</div>
+        <div class="user-avatar">${initial}</div>
         <div style="text-align: left;">
           <div style="font-size: 0.85rem; font-weight: 700; color: #FFF; line-height: 1.2;">${currentUser.name}</div>
-          <span class="user-tier-badge">⭐ ${currentUser.loyaltyTier}</span>
+          <span class="user-tier-badge">⭐ ${currentUser.loyaltyTier || 'Socio'}</span>
         </div>
       `;
     }
-    userBadgeEl.onclick = openAuthModal;
+    userBadgeEl.onclick = () => openAuthModal('login');
   }
 
   // Notification Bell
@@ -532,12 +551,21 @@ document.addEventListener("DOMContentLoaded", () => {
       showToast("⚠️ Por favor selecciona una franja horaria disponible.", "warning");
       return;
     }
-    document.getElementById("custName").value = currentUser.name;
-    document.getElementById("custIdNumber").value = currentUser.idNumber;
-    document.getElementById("custEmail").value = currentUser.email;
-    document.getElementById("custPhone").value = currentUser.phone;
-    document.getElementById("custCompany").value = currentUser.company;
-    document.getElementById("custEmergency").value = currentUser.emergencyContact;
+    if (currentUser) {
+      document.getElementById("custName").value = currentUser.name || "";
+      document.getElementById("custIdNumber").value = currentUser.idNumber || "";
+      document.getElementById("custEmail").value = currentUser.email || "";
+      document.getElementById("custPhone").value = currentUser.phone || "";
+      document.getElementById("custCompany").value = currentUser.company || "";
+      document.getElementById("custEmergency").value = currentUser.emergencyContact || "";
+    } else {
+      document.getElementById("custName").value = "";
+      document.getElementById("custIdNumber").value = "";
+      document.getElementById("custEmail").value = "";
+      document.getElementById("custPhone").value = "";
+      document.getElementById("custCompany").value = "";
+      document.getElementById("custEmergency").value = "";
+    }
 
     switchModalStep(2);
   };
@@ -553,13 +581,32 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    currentUser.name = name;
-    currentUser.idNumber = idNum;
-    currentUser.email = email;
-    currentUser.phone = phone;
-    currentUser.company = document.getElementById("custCompany").value.trim();
-    currentUser.emergencyContact = document.getElementById("custEmergency").value.trim();
+    if (!currentUser) {
+      currentUser = {
+        id: "cli-" + Date.now(),
+        name: name,
+        idNumber: idNum,
+        email: email,
+        phone: phone,
+        company: document.getElementById("custCompany").value.trim() || "Independiente",
+        emergencyContact: document.getElementById("custEmergency").value.trim(),
+        loyaltyTier: "Nuevo Socio",
+        discountRate: 0.0,
+        registeredSince: new Date().toISOString().split("T")[0]
+      };
+      const clients = NexusStorage.getClients();
+      clients.unshift(currentUser);
+      NexusStorage.saveClients(clients);
+    } else {
+      currentUser.name = name;
+      currentUser.idNumber = idNum;
+      currentUser.email = email;
+      currentUser.phone = phone;
+      currentUser.company = document.getElementById("custCompany").value.trim();
+      currentUser.emergencyContact = document.getElementById("custEmergency").value.trim();
+    }
     NexusStorage.setCurrentUser(currentUser);
+    NexusStorage.setAuthRole("client");
     initUserBadge();
 
     switchModalStep(3);
@@ -601,11 +648,12 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     const subtotalCRC = baseRateCRC + addonsTotalCRC;
-    const discountCRC = subtotalCRC * currentUser.discountRate;
+    const discountRate = currentUser ? (currentUser.discountRate || 0) : 0;
+    const discountCRC = subtotalCRC * discountRate;
     calculatedTotalCRC = subtotalCRC - discountCRC;
 
     const subtotalUSD = baseRateUSD + addonsTotalUSD;
-    const discountUSD = subtotalUSD * currentUser.discountRate;
+    const discountUSD = subtotalUSD * discountRate;
     calculatedTotalUSD = Math.round(subtotalUSD - discountUSD);
 
     summaryBox.innerHTML = `
@@ -623,10 +671,12 @@ document.addEventListener("DOMContentLoaded", () => {
           <span>₡${a.price.toLocaleString()}</span>
         </div>
       `).join("")}
-      <div class="summary-row" style="color: var(--gold-warm);">
-        <span>Descuento de Socio (${currentUser.loyaltyTier} - ${currentUser.discountRate * 100}%):</span>
-        <span>-₡${discountCRC.toLocaleString()}</span>
-      </div>
+      ${discountRate > 0 ? `
+        <div class="summary-row" style="color: var(--gold-warm);">
+          <span>Descuento de Socio (${currentUser ? currentUser.loyaltyTier : ''} - ${Math.round(discountRate * 100)}%):</span>
+          <span>-₡${Math.round(discountCRC).toLocaleString()}</span>
+        </div>
+      ` : ''}
       <div class="summary-row total">
         <span>Total a Pagar:</span>
         <span style="color: var(--terracotta);">₡${calculatedTotalCRC.toLocaleString()} <span style="font-size: 0.88rem; font-weight: normal; color: var(--gold-warm);">($${calculatedTotalUSD} USD)</span></span>
@@ -726,11 +776,11 @@ document.addEventListener("DOMContentLoaded", () => {
       id: bookingId,
       spaceId: selectedSpace.id,
       spaceName: selectedSpace.name,
-      clientId: currentUser.id,
-      clientName: currentUser.name,
-      clientEmail: currentUser.email,
-      clientPhone: currentUser.phone,
-      company: currentUser.company,
+      clientId: currentUser ? currentUser.id : ("cli-" + Date.now()),
+      clientName: currentUser ? currentUser.name : "Cliente Invitado",
+      clientEmail: currentUser ? currentUser.email : "contacto@empresa.com",
+      clientPhone: currentUser ? currentUser.phone : "+506 8888-0000",
+      company: currentUser ? currentUser.company : "",
       bookingType: currentFilterType,
       date: selectedDate,
       timeStart: times[0],
@@ -756,10 +806,11 @@ document.addEventListener("DOMContentLoaded", () => {
     // Add alert notification for Admin
     if (initialStatus === "pending_sinpe") {
       const notifs = NexusStorage.getNotifications();
+      const clientDisplayName = currentUser ? currentUser.name : "Cliente Invitado";
       notifs.unshift({
         id: "notif-" + Date.now(),
         title: "Nuevo Pago SINPE Recibido",
-        message: `Reserva ${bookingId} (${currentUser.name}) requiere validación. SLA de 30m activo.`,
+        message: `Reserva ${bookingId} (${clientDisplayName}) requiere validación. SLA de 30m activo.`,
         time: "Justo ahora",
         unread: true,
         link: "admin.html#secSla"
@@ -851,7 +902,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   window.sendWhatsappConfirmation = function() {
-    alert("Simulación de Envío a WhatsApp:\n\n📱 Mensaje generado:\n'Hola " + currentUser.name + ", tu reserva en NEXUS (" + selectedSpace.name + ") está agendada. Presenta tu código QR en recepción al llegar. Teléfono concierge: +506 8888-6398.'");
+    const clientDisplayName = currentUser ? currentUser.name : "estimado socio";
+    alert("Simulación de Envío a WhatsApp:\n\n📱 Mensaje generado:\n'Hola " + clientDisplayName + ", tu reserva en NEXUS (" + selectedSpace.name + ") está agendada. Presenta tu código QR en recepción al llegar. Teléfono concierge: +506 8888-6398.'");
   };
 
   // Setup Client Portal Events
@@ -863,6 +915,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   window.openClientPortalModal = function() {
+    if (!currentUser) {
+      openAuthModal('login');
+      showToast("Por favor inicie sesión o regístrese para ver sus reservas.", "info");
+      return;
+    }
     const modal = document.getElementById("portalModal");
     const container = document.getElementById("portalBookingsList");
     if (!modal || !container) return;
@@ -965,71 +1022,138 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  // AUTH MODAL & ROLE SWITCHING (ADMIN VS CLIENT)
-  window.openAuthModal = function() {
+  // AUTH MODAL & ROLE SWITCHING (LOGIN, SIGN UP, DEMO SHORTCUTS)
+  window.openAuthModal = function(initialTab = "login") {
     const modal = document.getElementById("authModal");
     if (!modal) return;
-
-    // Render registered clients list
-    const clients = NexusStorage.getClients();
-    const container = document.getElementById("authClientsList");
-    if (container) {
-      container.innerHTML = clients.map(c => `
-        <div class="user-select-card ${c.id === currentUser.id ? 'active' : ''}" onclick="selectClientAuth('${c.id}')">
-          <div style="display: flex; align-items: center; gap: 12px;">
-            <div class="user-avatar">${c.name.charAt(0)}</div>
-            <div>
-              <div style="font-weight: 700; color: #FFF; font-size: 0.92rem;">${c.name}</div>
-              <div style="font-size: 0.76rem; color: #B8A99A;">${c.company} · ${c.phone}</div>
-            </div>
-          </div>
-          <span class="user-tier-badge">⭐ ${c.loyaltyTier}</span>
-        </div>
-      `).join("");
-    }
-
+    switchAuthTab(initialTab);
     modal.classList.add("open");
   };
 
   window.closeAuthModal = function() {
-    document.getElementById("authModal").classList.remove("open");
+    const modal = document.getElementById("authModal");
+    if (modal) modal.classList.remove("open");
   };
 
-  window.switchAuthTab = function(role) {
-    if (role === "admin") {
-      document.getElementById("authTabAdmin").classList.add("active");
-      document.getElementById("authTabClient").classList.remove("active");
-      document.getElementById("authContentAdmin").style.display = "block";
-      document.getElementById("authContentClient").style.display = "none";
+  window.switchAuthTab = function(tab) {
+    const tabLogin = document.getElementById("authTabLogin");
+    const tabSignup = document.getElementById("authTabSignup");
+    const contentLogin = document.getElementById("authContentLogin");
+    const contentSignup = document.getElementById("authContentSignup");
+    const headerTitle = document.getElementById("authModalHeaderTitle");
+
+    if (tab === "signup") {
+      if (tabLogin) tabLogin.classList.remove("active");
+      if (tabSignup) tabSignup.classList.add("active");
+      if (contentLogin) contentLogin.style.display = "none";
+      if (contentSignup) contentSignup.style.display = "block";
+      if (headerTitle) headerTitle.textContent = "Registro de Nuevo Cliente";
     } else {
-      document.getElementById("authTabClient").classList.add("active");
-      document.getElementById("authTabAdmin").classList.remove("active");
-      document.getElementById("authContentAdmin").style.display = "none";
-      document.getElementById("authContentClient").style.display = "block";
+      if (tabSignup) tabSignup.classList.remove("active");
+      if (tabLogin) tabLogin.classList.add("active");
+      if (contentSignup) contentSignup.style.display = "none";
+      if (contentLogin) contentLogin.style.display = "block";
+      if (headerTitle) headerTitle.textContent = "Acceso de Clientes & Socios";
     }
   };
 
-  window.loginAsAdmin = function() {
-    NexusStorage.setAuthRole("admin");
+  window.handleUserLoginForm = function(event) {
+    if (event) event.preventDefault();
+    const emailInput = document.getElementById("loginEmail");
+    const email = emailInput ? emailInput.value.trim().toLowerCase() : "";
+    const clients = NexusStorage.getClients();
+    let found = clients.find(c => c.email && c.email.toLowerCase() === email);
+
+    if (!found) {
+      found = clients[0] || {
+        id: "cli-" + Date.now(),
+        name: email ? email.split("@")[0].toUpperCase() : "Cliente Socio",
+        email: email || "socio@nexusspaces.com",
+        phone: "+506 8888-0000",
+        idNumber: "1-0000-0000",
+        loyaltyTier: "Nuevo Socio",
+        discountRate: 0.0
+      };
+    }
+
+    NexusStorage.setCurrentUser(found);
+    NexusStorage.setAuthRole("client");
+    currentUser = found;
+    currentRole = "client";
+    initUserBadge();
     closeAuthModal();
-    showToast("👑 Sesión de Gerencia iniciada. Redirigiendo al panel de control...", "success");
-    setTimeout(() => {
-      window.location.href = "admin.html";
-    }, 600);
+    showToast(`✓ Bienvenido(a), ${found.name}. Sesión iniciada con éxito.`, "success");
   };
 
-  window.selectClientAuth = function(clientId) {
-    const client = NexusStorage.getClients().find(c => c.id === clientId);
+  window.handleUserRegisterForm = function(event) {
+    if (event) event.preventDefault();
+    const name = document.getElementById("regName").value.trim();
+    const idNumber = document.getElementById("regId").value.trim();
+    const email = document.getElementById("regEmail").value.trim();
+    const phone = document.getElementById("regPhone").value.trim();
+    const company = document.getElementById("regCompany").value.trim();
+
+    if (!name || !email || !phone) {
+      showToast("⚠️ Por favor completa los campos requeridos.", "warning");
+      return;
+    }
+
+    const newClient = {
+      id: "cli-" + Date.now(),
+      name: name,
+      idNumber: idNumber || "1-9999-9999",
+      email: email,
+      phone: phone,
+      company: company || "Independiente",
+      emergencyContact: "+506 8888-0000",
+      loyaltyTier: "Nuevo Socio",
+      discountRate: 0.0,
+      registeredSince: new Date().toISOString().split("T")[0]
+    };
+
+    const clients = NexusStorage.getClients();
+    clients.unshift(newClient);
+    NexusStorage.saveClients(clients);
+
+    NexusStorage.setCurrentUser(newClient);
+    NexusStorage.setAuthRole("client");
+    currentUser = newClient;
+    currentRole = "client";
+    initUserBadge();
+    closeAuthModal();
+    showToast(`✓ ¡Bienvenido(a) a NEXUS, ${name}! Cuenta creada exitosamente.`, "success");
+  };
+
+  window.quickLoginAs = function(target) {
+    if (target === "admin") {
+      NexusStorage.setAuthRole("admin");
+      closeAuthModal();
+      showToast("👑 Sesión de Gerencia General iniciada. Redirigiendo...", "success");
+      setTimeout(() => {
+        window.location.href = "admin.html";
+      }, 500);
+      return;
+    }
+
+    const clients = NexusStorage.getClients();
+    const client = clients.find(c => c.id === target) || clients[0];
     if (client) {
-      currentUser = client;
-      currentRole = "client";
       NexusStorage.setCurrentUser(client);
       NexusStorage.setAuthRole("client");
+      currentUser = client;
+      currentRole = "client";
       initUserBadge();
-      renderSpacesCatalog();
       closeAuthModal();
       showToast(`✓ Sesión activa como ${client.name} (${client.loyaltyTier}).`, "success");
     }
+  };
+
+  window.logoutUser = function() {
+    NexusStorage.logout();
+    currentUser = null;
+    currentRole = null;
+    initUserBadge();
+    showToast("Has cerrado sesión.", "info");
   };
 
   window.showToast = function(message, type = "info") {

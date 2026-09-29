@@ -23,8 +23,7 @@
       <ul class="nav-links">
         <li><a href="#catalogo" class="nav-link active">Colección de Espacios</a></li>
         <li><a href="#croquis" class="nav-link">Plano Arquitectónico 2D</a></li>
-        <li><a href="javascript:void(0)" id="navMyReservations" class="nav-link">Mis Reservas</a></li>
-        <li><a href="admin.html" id="navAdminDirectBtn" class="btn btn-admin btn-sm">⚡ Panel Concierge &amp; SLA</a></li>
+        <li id="navMyReservationsItem" style="display: none;"><a href="javascript:void(0)" id="navMyReservations" class="nav-link">Mis Reservas</a></li>
       </ul>
 
       <div class="nav-actions">
@@ -32,23 +31,40 @@
         <div class="notif-bell-wrap">
           <button class="btn-bell" id="notifBellBtn" title="Alertas y Notificaciones">
             🔔
-            <span class="notif-badge" id="notifCountBadge">3</span>
+            <span class="notif-badge" id="notifCountBadge">2</span>
           </button>
           <div class="notif-dropdown" id="notifDropdown">
             <div class="notif-header">
               <span>Notificaciones del Sistema</span>
               <span style="font-size: 0.72rem; color: var(--gold-warm); cursor: pointer;" onclick="markAllNotifsRead()">Marcar leídas</span>
             </div>
-            <div id="notifItemsContainer">
-              <!-- Injected by JS -->
-            </div>
+            <div id="notifItemsContainer"></div>
           </div>
         </div>
 
-        <!-- User Profile / Auth Switcher -->
-        <div class="user-badge" id="navUserBadge" title="Haga clic para iniciar sesión o cambiar rol (Admin / Socio)">
-          <!-- Populated by JS -->
+        <!-- Guest Actions (When NOT logged in) -->
+        <div id="navGuestActions" style="display: flex; align-items: center; gap: 10px;">
+          <button class="btn btn-secondary btn-sm" onclick="openAuthModal('login')">
+            Iniciar Sesión
+          </button>
+          <button class="btn btn-primary btn-sm" onclick="openAuthModal('signup')">
+            Registrarse
+          </button>
+          <a href="admin.html" class="btn btn-admin btn-sm" title="Ingreso a centro de control de gerencia">
+            ⚡ Acceso Gerencia
+          </a>
         </div>
+
+        <!-- Authenticated User Profile (When logged in) -->
+        <div id="navUserLoggedActions" style="display: none; align-items: center; gap: 10px;">
+          <div class="user-badge" id="navUserBadge" title="Ver perfil del socio">
+            <!-- Populated by JS -->
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="logoutUser()" title="Cerrar Sesión" style="padding: 6px 10px;">
+            ✕ Salir
+          </button>
+        </div>
+
       </div>
     </div>
   </header>
@@ -58,7 +74,7 @@
     <div class="container">
       <div class="hero-tag">
         <span class="pulse-dot"></span>
-        Arquitectura Acústica &amp; Ecosistema Odoo 19 · Disponibilidad en Vivo
+        Santuario de Productividad &amp; Coworking Ejecutivo · Disponibilidad en Tiempo Real
       </div>
       <h1 class="hero-title">
         Espacios concebidos para la<br>
@@ -145,7 +161,7 @@
           
           <!-- Central Atrium -->
           <rect x="365" y="20" width="190" height="420" fill="#130F0D" stroke="rgba(224, 196, 172, 0.08)" stroke-dasharray="6,6"/>
-          <text x="460" y="240" fill="#7D6F63" font-size="11" font-family="'Syne', sans-serif" text-anchor="middle" letter-spacing="4">GALERÍA CENTRAL · CONCIERGE</text>
+          <text x="460" y="240" fill="#7D6F63" font-size="11" font-family="'Plus Jakarta Sans', sans-serif" font-weight="700" text-anchor="middle" letter-spacing="4">GALERÍA CENTRAL · CONCIERGE</text>
 
           <!-- Zone 1: Sala Boardroom Horizon (North-East VIP) -->
           <g>
@@ -218,9 +234,7 @@
     </div>
 
     <!-- Catalog Dynamic Grid -->
-    <div class="spaces-grid" id="spacesGrid">
-      <!-- Injected by JavaScript -->
-    </div>
+    <div class="spaces-grid" id="spacesGrid"></div>
   </section>
 
   <!-- MULTI-STEP BOOKING & PAYMENT MODAL -->
@@ -235,7 +249,6 @@
       </div>
 
       <div class="modal-body">
-        <!-- Wizard Navigation Steps -->
         <div class="wizard-steps">
           <div class="wizard-step active" id="stepIndicator1">
             <span class="step-num">1</span>
@@ -253,16 +266,11 @@
 
         <!-- STEP 1: CALENDAR & TIME/DAYS/MONTHS SELECTION -->
         <div class="modal-step-content" id="modalStep1">
-          <!-- Dynamic Booking Mode Container -->
-          <div id="bookingModeContainer">
-            <!-- Injected by JS: Hour slots, Day Range, or Month Plan -->
-          </div>
+          <div id="bookingModeContainer"></div>
 
           <div style="margin-top: 22px;">
             <h4 style="color: #FFFFFF; font-size: 0.98rem; margin-bottom: 10px;">✨ Servicios de Hospitalidad &amp; Soporte</h4>
-            <div id="addonsList">
-              <!-- Populated by JS -->
-            </div>
+            <div id="addonsList"></div>
           </div>
 
           <div style="margin-top: 26px; text-align: right;">
@@ -275,7 +283,7 @@
         <!-- STEP 2: REGISTERED CLIENT PROFILE VERIFICATION -->
         <div class="modal-step-content" id="modalStep2" style="display: none;">
           <div style="background: rgba(224, 122, 95, 0.08); border: 1px solid var(--border-warm); border-radius: 12px; padding: 16px; margin-bottom: 22px; font-size: 0.88rem; color: #F4E2D0;">
-            🔒 <strong>Registro de Seguridad &amp; Membresía:</strong> Los datos se sincronizan con su perfil en Odoo 19 para cálculo de descuentos de fidelidad y factura electrónica oficial.
+            🔒 <strong>Registro de Seguridad &amp; Membresía:</strong> Los datos se registrarán para la facturación electrónica oficial y el control de acceso.
           </div>
 
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
@@ -313,9 +321,7 @@
 
         <!-- STEP 3: PAYMENT (CARD OR SINPE MOVIL) -->
         <div class="modal-step-content" id="modalStep3" style="display: none;">
-          <div class="order-summary" id="checkoutSummary">
-            <!-- Dynamic calculation -->
-          </div>
+          <div class="order-summary" id="checkoutSummary"></div>
 
           <label class="field-label" style="margin-bottom: 8px; display: block;">Modalidad de Pago:</label>
           <div class="payment-tabs">
@@ -325,7 +331,7 @@
             </div>
             <div class="pay-tab" id="tabCard" onclick="selectPaymentTab('card')">
               <h4>💳 Tarjeta Visa / Master / Amex</h4>
-              <p>Pasarela Odoo Payment Gateway (Cobro Inmediato)</p>
+              <p>Pasarela de Pago Segura (Cobro Inmediato)</p>
             </div>
           </div>
 
@@ -358,7 +364,6 @@
                 </div>
               </label>
 
-              <!-- Quick Demo Voucher Loader Buttons -->
               <div class="fast-sinpe-actions">
                 <span style="font-size: 0.76rem; color: #B8A99A; width: 100%;">Prueba rápida de demostración:</span>
                 <button type="button" class="fast-sinpe-btn" onclick="loadDemoVoucher('bac')">⚡ Cargar Comprobante Demo BAC San José</button>
@@ -384,7 +389,7 @@
               </div>
             </div>
             <div style="margin-top: 14px; font-size: 0.78rem; color: var(--sage-green);">
-              🔒 Conexión cifrada SSL con pasarela de pago autorizada de Odoo 19.
+              🔒 Conexión cifrada SSL con pasarela de pago autorizada.
             </div>
           </div>
 
@@ -403,13 +408,11 @@
             <h2 id="passSpaceName" style="color: #FFF; font-size: 1.6rem; margin-top: 10px;">-</h2>
             <p id="passDateTime" style="color: var(--gold-warm); font-size: 0.92rem; margin-bottom: 14px;">-</p>
 
-            <div class="qr-placeholder" id="passQrCode">
-              <!-- Injected SVG QR -->
-            </div>
+            <div class="qr-placeholder" id="passQrCode"></div>
 
             <div style="margin-top: 12px;">
               <div style="font-size: 0.78rem; color: #B8A99A; text-transform: uppercase; letter-spacing: 0.05em;">Código Único de Reserva:</div>
-              <div id="passBookingId" style="font-size: 1.4rem; font-weight: 800; color: var(--terracotta); font-family: 'Syne', sans-serif;">-</div>
+              <div id="passBookingId" style="font-size: 1.4rem; font-weight: 800; color: var(--terracotta); font-family: 'Plus Jakarta Sans', sans-serif;">-</div>
               <div id="passClient" style="font-size: 0.88rem; color: #EDE5D8; margin-top: 4px;">-</div>
             </div>
 
@@ -445,9 +448,7 @@
         <p style="color: #B8A99A; font-size: 0.86rem; margin-bottom: 16px;">
           Visualice la agenda de esta sala para planificar sus sesiones o eventos corporativos sin solapamientos.
         </p>
-        <div id="roomCalModalGridContainer">
-          <!-- Calendar Matrix injected by JS -->
-        </div>
+        <div id="roomCalModalGridContainer"></div>
         <div style="margin-top: 22px; text-align: right;">
           <button class="btn btn-primary" id="roomCalModalBookBtn">Reservar en Esta Sala ➔</button>
         </div>
@@ -466,9 +467,7 @@
         <button class="modal-close" onclick="closePortalModal()">✕</button>
       </div>
       <div class="modal-body">
-        <div id="portalBookingsList">
-          <!-- Dynamic Bookings -->
-        </div>
+        <div id="portalBookingsList"></div>
       </div>
     </div>
   </div>
@@ -515,106 +514,104 @@
     </div>
   </div>
 
-  <!-- AUTH & ROLE SWITCHER MODAL (ADMIN / SOCIO) -->
+  <!-- AUTH MODAL (LOGIN & SIGN UP) -->
   <div class="modal-backdrop" id="authModal">
-    <div class="modal-card" style="max-width: 560px;">
+    <div class="modal-card" style="max-width: 580px;">
       <div class="modal-header">
         <div>
-          <h3 style="color: #FFF; font-size: 1.25rem;">Acceso al Sistema NEXUS</h3>
-          <p style="color: var(--gold-warm); font-size: 0.82rem;">Seleccione el rol o usuario con el que desea interactuar en el demo</p>
+          <h3 id="authModalHeaderTitle" style="color: #FFF; font-size: 1.25rem;">Acceso al Sistema NEXUS</h3>
+          <p style="color: var(--gold-warm); font-size: 0.82rem;">Inicie sesión o regístrese como nuevo cliente</p>
         </div>
         <button class="modal-close" onclick="closeAuthModal()">✕</button>
       </div>
       <div class="modal-body">
         
-        <!-- Role Tabs -->
-        <div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 12px;">
-          <button class="toggle-pill active" id="authTabAdmin" onclick="switchAuthTab('admin')">👑 Gerencia / Administrador</button>
-          <button class="toggle-pill" id="authTabClient" onclick="switchAuthTab('client')">👤 Socio / Cliente</button>
+        <!-- Toggle Tabs: Login vs Register -->
+        <div style="display: flex; gap: 10px; margin-bottom: 22px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 12px;">
+          <button class="toggle-pill active" id="authTabLogin" onclick="switchAuthTab('login')">🔑 Iniciar Sesión</button>
+          <button class="toggle-pill" id="authTabSignup" onclick="switchAuthTab('signup')">📝 Crear Cuenta / Registrarse</button>
         </div>
 
-        <!-- ADMIN TAB CONTENT -->
-        <div id="authContentAdmin">
-          <div style="background: rgba(212, 163, 115, 0.08); border: 1px solid var(--border-gold); border-radius: 12px; padding: 18px; margin-bottom: 18px;">
-            <div style="font-weight: 700; color: #FFF; font-size: 1rem; margin-bottom: 4px;">Acceso Ejecutivo a Operaciones</div>
-            <p style="font-size: 0.84rem; color: #B8A99A; margin-bottom: 14px;">
-              Ingresa al centro de control gerencial para validar pagos SINPE con SLA, gestionar calendarios y ver gráficos de demanda.
-            </p>
+        <!-- LOGIN TAB CONTENT -->
+        <div id="authContentLogin">
+          <form onsubmit="handleUserLoginForm(event)">
             <div class="field-group" style="margin-bottom: 12px;">
-              <label class="field-label">Usuario Gerencial</label>
-              <input type="text" class="field-input" value="admin@nexusspaces.com" readonly>
+              <label class="field-label">Correo Electrónico</label>
+              <input type="email" id="loginEmail" class="field-input" placeholder="ej. usuario@empresa.com" required value="mariana.rojas@techcr.io">
             </div>
-            <div class="field-group" style="margin-bottom: 16px;">
-              <label class="field-label">Clave de Acceso</label>
-              <input type="password" class="field-input" value="••••••••" readonly>
+            <div class="field-group" style="margin-bottom: 18px;">
+              <label class="field-label">Contraseña</label>
+              <input type="password" id="loginPassword" class="field-input" placeholder="••••••••" required value="password123">
             </div>
-            <button class="btn btn-primary btn-block" onclick="loginAsAdmin()">
-              ⚡ Ingresar al Panel Gerencial &amp; SLA ➔
+            <button type="submit" class="btn btn-primary btn-block" style="margin-bottom: 20px;">
+              Iniciar Sesión ➔
             </button>
+          </form>
+
+          <!-- Fast Demo Login Pills -->
+          <div style="background: rgba(36,29,25,0.45); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 14px;">
+            <div style="font-size: 0.76rem; color: var(--gold-warm); font-weight: 700; text-transform: uppercase; margin-bottom: 8px;">
+              Accesos Rápidos para Demostración:
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <button class="fast-sinpe-btn" style="text-align: left;" onclick="quickLoginAs('cli-101')">
+                👤 Mariana Rojas Solís (Cliente Oro · 10% Descuento)
+              </button>
+              <button class="fast-sinpe-btn" style="text-align: left;" onclick="quickLoginAs('cli-102')">
+                👑 Alejandro Montero (Cliente Platino VIP · 15% Descuento)
+              </button>
+              <button class="fast-sinpe-btn" style="text-align: left; border-color: var(--terracotta);" onclick="quickLoginAs('admin')">
+                ⚡ Lic. Roberto Alvarado (Gerencia General &amp; Operaciones)
+              </button>
+            </div>
           </div>
         </div>
 
-        <!-- CLIENT TAB CONTENT -->
-        <div id="authContentClient" style="display: none;">
-          <p style="font-size: 0.86rem; color: #B8A99A; margin-bottom: 14px;">
-            Seleccione uno de los socios registrados para probar sus niveles de descuento y reservas:
-          </p>
-          <div id="authClientsList">
-            <!-- Injected by JS -->
-          </div>
+        <!-- SIGN UP TAB CONTENT -->
+        <div id="authContentSignup" style="display: none;">
+          <form onsubmit="handleUserRegisterForm(event)">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+              <div class="field-group">
+                <label class="field-label">Nombre Completo *</label>
+                <input type="text" id="regName" class="field-input" placeholder="ej. Carlos Mendoza" required>
+              </div>
+              <div class="field-group">
+                <label class="field-label">Cédula / Identificación *</label>
+                <input type="text" id="regId" class="field-input" placeholder="ej. 1-1234-5678" required>
+              </div>
+              <div class="field-group">
+                <label class="field-label">Correo Corporativo *</label>
+                <input type="email" id="regEmail" class="field-input" placeholder="ej. carlos@empresa.com" required>
+              </div>
+              <div class="field-group">
+                <label class="field-label">Teléfono / WhatsApp *</label>
+                <input type="tel" id="regPhone" class="field-input" placeholder="+506 8888-0000" required>
+              </div>
+              <div class="field-group">
+                <label class="field-label">Empresa / Razón Social</label>
+                <input type="text" id="regCompany" class="field-input" placeholder="Opcional">
+              </div>
+              <div class="field-group">
+                <label class="field-label">Contraseña *</label>
+                <input type="password" id="regPass" class="field-input" placeholder="••••••••" required>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">
+              Crear Cuenta &amp; Registrarse ➔
+            </button>
+          </form>
         </div>
 
       </div>
     </div>
   </div>
 
-  <!-- CLIENT PROFILE MODAL -->
-  <div class="modal-backdrop" id="profileModal">
-    <div class="modal-card" style="max-width: 530px;">
-      <div class="modal-header">
-        <h3 style="color: #FFF; font-size: 1.2rem;">👤 Perfil del Socio Registrado</h3>
-        <button class="modal-close" onclick="closeProfileModal()">✕</button>
-      </div>
-      <div class="modal-body">
-        <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 18px;">
-          <div class="user-avatar" style="width: 48px; height: 48px; font-size: 1.2rem;">M</div>
-          <div>
-            <div style="color: #FFF; font-weight: 700;" id="profTier">Oro (Frecuente)</div>
-            <div style="color: var(--gold-warm); font-size: 0.84rem;" id="profHours">84 horas acumuladas</div>
-          </div>
-        </div>
-
-        <div class="field-group" style="margin-bottom: 12px;">
-          <label class="field-label">Nombre</label>
-          <input type="text" id="profName" class="field-input">
-        </div>
-        <div class="field-group" style="margin-bottom: 12px;">
-          <label class="field-label">Cédula Oficial</label>
-          <input type="text" id="profId" class="field-input">
-        </div>
-        <div class="field-group" style="margin-bottom: 12px;">
-          <label class="field-label">Correo</label>
-          <input type="email" id="profEmail" class="field-input">
-        </div>
-        <div class="field-group" style="margin-bottom: 12px;">
-          <label class="field-label">Teléfono</label>
-          <input type="text" id="profPhone" class="field-input">
-        </div>
-        <div class="field-group" style="margin-bottom: 22px;">
-          <label class="field-label">Empresa</label>
-          <input type="text" id="profCompany" class="field-input">
-        </div>
-
-        <button class="btn btn-primary btn-block" onclick="saveClientProfile()">Guardar Cambios</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Footer -->
-  <footer style="border-top: 1px solid var(--border-subtle); padding: 48px 0; margin-top: 90px; text-align: center; color: var(--text-dim); font-size: 0.88rem;">
+  <!-- CLEAN LUXURY FOOTER (No Odoo technical jargon) -->
+  <footer style="border-top: 1px solid var(--border-subtle); padding: 45px 0; margin-top: 85px; text-align: center;">
     <div class="container">
-      <p style="margin-bottom: 8px; color: var(--champagne);"><strong>NEXUS Private Spaces &amp; Club</strong> · Arquitectura de Experiencia para Odoo 19</p>
-      <p>Pasarela de Pagos Mixta, Validación SINPE Móvil con SLA, Reprogramaciones y Códigos QR</p>
+      <p style="margin-bottom: 6px; color: var(--champagne); font-weight: 700; font-size: 1rem;">NEXUS Private Spaces &amp; Club</p>
+      <p style="color: var(--text-dim); font-size: 0.84rem;">San José, Costa Rica · Concierge &amp; Atención: +506 8888-6398 · info@nexusspaces.com</p>
+      <p style="color: var(--text-dim); font-size: 0.78rem; margin-top: 10px;">© 2026 NEXUS. Todos los derechos reservados.</p>
     </div>
   </footer>
 

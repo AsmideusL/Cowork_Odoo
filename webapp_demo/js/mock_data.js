@@ -1,8 +1,8 @@
-// Mock Data Store for NEXUS Coworking & Private Spaces Demo (Full Feature Suite)
+// Mock Data Store for NEXUS Coworking & Private Spaces Demo (Clean Unauthenticated Guest by Default)
 const NEXUS_DATA = {
   adminUser: {
     id: "admin-1",
-    name: "Lic. Roberto Alvarado (Gerente)",
+    name: "Lic. Roberto Alvarado",
     email: "admin@nexusspaces.com",
     role: "admin",
     roleLabel: "Gerente de Operaciones",
@@ -280,9 +280,8 @@ const NEXUS_DATA = {
   ],
 
   notifications: [
-    { id: "notif-1", title: "Nuevo Pago SINPE por Validar", message: "Reserva RES-9844 (Mariana Rojas) enviada con SLA de 30m.", time: "Hace 12 min", unread: true, link: "admin.html#secSla" },
-    { id: "notif-2", title: "Reserva Confirmada", message: "Reserva RES-9830 confirmada y factura electrónica enviada.", time: "Hace 1 hora", unread: false, link: "admin.html#secBookings" },
-    { id: "notif-3", title: "Recordatorio de Mantenimiento", message: "Limpieza profunda programada para Focus Pod Oasis a las 18:30.", time: "Hace 3 horas", unread: false, link: "admin.html#secCalendars" }
+    { id: "notif-1", title: "Nuevo Pago SINPE por Validar", message: "Reserva RES-9844 recibida con SLA de 30m.", time: "Hace 10 min", unread: true, link: "admin.html#secSla" },
+    { id: "notif-2", title: "Reserva Confirmada", message: "Reserva RES-9830 confirmada y factura electrónica emitida.", time: "Hace 1 hora", unread: false, link: "admin.html#secBookings" }
   ],
 
   sinpeAccount: {
@@ -296,38 +295,51 @@ const NEXUS_DATA = {
 
 const NexusStorage = {
   getSpaces: () => {
-    const data = localStorage.getItem("nexus_spaces_v3");
+    const data = localStorage.getItem("nexus_spaces_v4");
     return data ? JSON.parse(data) : NEXUS_DATA.spaces;
   },
   saveSpaces: (spaces) => {
-    localStorage.setItem("nexus_spaces_v3", JSON.stringify(spaces));
+    localStorage.setItem("nexus_spaces_v4", JSON.stringify(spaces));
   },
   getBookings: () => {
-    const data = localStorage.getItem("nexus_bookings_v3");
+    const data = localStorage.getItem("nexus_bookings_v4");
     return data ? JSON.parse(data) : NEXUS_DATA.bookings;
   },
   saveBookings: (bookings) => {
-    localStorage.setItem("nexus_bookings_v3", JSON.stringify(bookings));
+    localStorage.setItem("nexus_bookings_v4", JSON.stringify(bookings));
   },
   getClients: () => {
-    const data = localStorage.getItem("nexus_clients_v3");
+    const data = localStorage.getItem("nexus_clients_v4");
     return data ? JSON.parse(data) : NEXUS_DATA.clients;
   },
   saveClients: (clients) => {
-    localStorage.setItem("nexus_clients_v3", JSON.stringify(clients));
+    localStorage.setItem("nexus_clients_v4", JSON.stringify(clients));
   },
+  // User Authentication state
   getCurrentUser: () => {
-    const user = localStorage.getItem("nexus_current_user_v3");
-    return user ? JSON.parse(user) : NEXUS_DATA.clients[0];
+    const user = localStorage.getItem("nexus_current_user_v4");
+    return user ? JSON.parse(user) : null; // Returns null if not logged in!
   },
   setCurrentUser: (user) => {
-    localStorage.setItem("nexus_current_user_v3", JSON.stringify(user));
+    if (user) {
+      localStorage.setItem("nexus_current_user_v4", JSON.stringify(user));
+    } else {
+      localStorage.removeItem("nexus_current_user_v4");
+    }
   },
   getAuthRole: () => {
-    return localStorage.getItem("nexus_auth_role") || "client"; // 'admin' or 'client'
+    return localStorage.getItem("nexus_auth_role_v4") || null; // null if guest
   },
   setAuthRole: (role) => {
-    localStorage.setItem("nexus_auth_role", role);
+    if (role) {
+      localStorage.setItem("nexus_auth_role_v4", role);
+    } else {
+      localStorage.removeItem("nexus_auth_role_v4");
+    }
+  },
+  logout: () => {
+    localStorage.removeItem("nexus_current_user_v4");
+    localStorage.removeItem("nexus_auth_role_v4");
   },
   getNotifications: () => {
     const data = localStorage.getItem("nexus_notifications");
@@ -335,18 +347,13 @@ const NexusStorage = {
   },
   saveNotifications: (notifs) => {
     localStorage.setItem("nexus_notifications", JSON.stringify(notifs));
-  },
-  resetData: () => {
-    localStorage.clear();
   }
 };
 
-// Initialize defaults
-if (!localStorage.getItem("nexus_spaces_v3")) {
+// Seed baseline spaces and bookings if not initialized
+if (!localStorage.getItem("nexus_spaces_v4")) {
   NexusStorage.saveSpaces(NEXUS_DATA.spaces);
   NexusStorage.saveBookings(NEXUS_DATA.bookings);
   NexusStorage.saveClients(NEXUS_DATA.clients);
-  NexusStorage.setCurrentUser(NEXUS_DATA.clients[0]);
-  NexusStorage.setAuthRole("client");
   NexusStorage.saveNotifications(NEXUS_DATA.notifications);
 }
