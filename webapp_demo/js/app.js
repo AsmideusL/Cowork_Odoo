@@ -1072,23 +1072,65 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
+  window.fillAdminCredentials = function() {
+    const emailInput = document.getElementById("loginEmail");
+    const passInput = document.getElementById("loginPassword");
+    if (emailInput) emailInput.value = "admin@nexusspaces.com";
+    if (passInput) passInput.value = "admin123";
+    showToast("👑 Credenciales administrativas cargadas.", "info");
+  };
+
   window.handleUserLoginForm = function(event) {
     if (event) event.preventDefault();
     const emailInput = document.getElementById("loginEmail");
-    const email = emailInput ? emailInput.value.trim().toLowerCase() : "";
+    const passInput = document.getElementById("loginPassword");
+    const rawVal = emailInput ? emailInput.value.trim() : "";
+    const email = rawVal.toLowerCase();
+    const password = passInput ? passInput.value.trim() : "";
+
+    // 1. Check if logging in as Gerencia / Admin
+    const isAdminUser = (email === "admin" || email === "admin@nexusspaces.com" || email === "gerencia@nexus.com" || email === "gerencia");
+    if (isAdminUser) {
+      if (password === "admin123" || password === "admin" || password === "nexus2026") {
+        const adminObj = {
+          id: "admin-01",
+          name: "Lic. Roberto Alvarado",
+          email: "admin@nexusspaces.com",
+          role: "admin",
+          loyaltyTier: "Gerencia General"
+        };
+        NexusStorage.setCurrentUser(adminObj);
+        NexusStorage.setAuthRole("admin");
+        currentUser = adminObj;
+        currentRole = "admin";
+        closeAuthModal();
+        showToast("👑 Acceso concedido a Gerencia General. Redirigiendo al panel administrativo...", "success");
+        setTimeout(() => {
+          window.location.href = "admin.html";
+        }, 600);
+        return;
+      } else {
+        showToast("❌ Contraseña de gerencia incorrecta.", "warning");
+        return;
+      }
+    }
+
+    // 2. Client Login
     const clients = NexusStorage.getClients();
     let found = clients.find(c => c.email && c.email.toLowerCase() === email);
 
     if (!found) {
-      found = clients[0] || {
+      found = {
         id: "cli-" + Date.now(),
-        name: email ? email.split("@")[0].toUpperCase() : "Cliente Socio",
-        email: email || "socio@nexusspaces.com",
+        name: rawVal ? rawVal.split("@")[0].toUpperCase() : "Cliente Socio",
+        email: rawVal.includes("@") ? rawVal : (rawVal + "@empresa.com"),
         phone: "+506 8888-0000",
         idNumber: "1-0000-0000",
         loyaltyTier: "Nuevo Socio",
         discountRate: 0.0
       };
+      clients.unshift(found);
+      NexusStorage.saveClients(clients);
     }
 
     NexusStorage.setCurrentUser(found);
@@ -1141,6 +1183,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.quickLoginAs = function(target) {
     if (target === "admin") {
+      const adminObj = {
+        id: "admin-01",
+        name: "Lic. Roberto Alvarado",
+        email: "admin@nexusspaces.com",
+        role: "admin",
+        loyaltyTier: "Gerencia General"
+      };
+      NexusStorage.setCurrentUser(adminObj);
       NexusStorage.setAuthRole("admin");
       closeAuthModal();
       showToast("👑 Sesión de Gerencia General iniciada. Redirigiendo...", "success");

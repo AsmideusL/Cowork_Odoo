@@ -253,6 +253,128 @@ a {
 }
 
 /* ==========================================================================
+   NOTIFICATION BELL & DROPDOWN (Concierge Alerts)
+   ========================================================================== */
+.notif-bell-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.btn-bell {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-sm);
+  background: rgba(43, 33, 27, 0.6);
+  border: 1px solid var(--border-subtle);
+  color: #FFFFFF;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-bell:hover {
+  background: rgba(60, 47, 39, 0.9);
+  border-color: var(--border-gold);
+  transform: translateY(-1px);
+}
+
+.notif-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: var(--terracotta);
+  color: #FFFFFF;
+  font-size: 0.68rem;
+  font-weight: 800;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--bg-card);
+  box-shadow: 0 0 8px rgba(224, 122, 95, 0.6);
+}
+
+.notif-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  width: 340px;
+  background: #1A1412;
+  border: 1px solid var(--border-gold);
+  border-radius: var(--radius-md);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.65), 0 0 20px rgba(224, 196, 172, 0.05);
+  z-index: 1000;
+  overflow: hidden;
+  backdrop-filter: var(--blur-glass);
+}
+
+.notif-dropdown.open {
+  display: block;
+  animation: dropdownFade 0.22s ease-out;
+}
+
+@keyframes dropdownFade {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.notif-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: rgba(36, 29, 25, 0.7);
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #FFFFFF;
+}
+
+.notif-item {
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(224, 196, 172, 0.06);
+  cursor: pointer;
+  transition: var(--transition);
+  text-align: left;
+}
+
+.notif-item:hover {
+  background: rgba(224, 122, 95, 0.08);
+}
+
+.notif-item.unread {
+  background: rgba(224, 122, 95, 0.06);
+  border-left: 3px solid var(--terracotta);
+}
+
+.notif-title {
+  font-weight: 700;
+  color: #FFFFFF;
+  font-size: 0.86rem;
+  margin-bottom: 3px;
+}
+
+.notif-desc {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.35;
+  margin-bottom: 4px;
+}
+
+.notif-time {
+  font-size: 0.7rem;
+  color: var(--gold-warm);
+}
+
+/* ==========================================================================
    BUTTONS
    ========================================================================== */
 .btn {

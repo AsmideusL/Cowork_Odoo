@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Panel Concierge &amp; SLA | NEXUS Private Spaces</title>
   <meta name="description" content="Centro de control administrativo y gerencial para coworking: validación de pagos SINPE con SLA, gestión de calendarios por sala y analíticas de ocupación.">
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=2.2">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body style="background-color: var(--bg-dark);">
@@ -25,9 +25,24 @@
       </div>
 
       <div style="display: flex; align-items: center; gap: 14px;">
+        <!-- Notification Bell (Exclusively in Admin Suite) -->
+        <div class="notif-bell-wrap">
+          <button class="btn-bell" id="adminNotifBellBtn" onclick="toggleAdminNotifDropdown(event)" title="Alertas Concierge &amp; SLA">
+            🔔
+            <span class="notif-badge" id="adminNotifCountBadge">0</span>
+          </button>
+          <div class="notif-dropdown" id="adminNotifDropdown">
+            <div class="notif-header">
+              <span>🔔 Alertas de Operaciones</span>
+              <span style="font-size: 0.72rem; color: var(--gold-warm); cursor: pointer;" onclick="markAllAdminNotifsRead()">Marcar leídas</span>
+            </div>
+            <div id="adminNotifItemsContainer"></div>
+          </div>
+        </div>
+
         <button class="btn btn-secondary btn-sm" onclick="openManualBookingModal()">➕ Bloquear / Reservar Sala</button>
         <button class="btn btn-secondary btn-sm" onclick="exportBookingsToCSV()">📥 Exportar Reporte CSV</button>
-        <a href="index.html" class="btn btn-admin btn-sm">🚪 Salir al Portal Público</a>
+        <button class="btn btn-admin btn-sm" onclick="logoutAdmin()" title="Cerrar sesión gerencial">🚪 Salir a Portal</button>
       </div>
     </div>
   </header>
@@ -249,7 +264,7 @@
   </div>
 
   <!-- Scripts -->
-  <script src="js/mock_data.js"></script>
-  <script src="js/admin.js"></script>
+  <script src="js/mock_data.js?v=2.2"></script>
+  <script src="js/admin.js?v=2.2"></script>
 </body>
 </html>

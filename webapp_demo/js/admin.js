@@ -9,6 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
   setupAdminTabs();
   setupAdminFilters();
   startSlaTimers();
+  initAdminNotificationBell();
 
   function initAdminDashboard() {
     bookings = NexusStorage.getBookings();
@@ -20,6 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
     renderRoomCalendarViewer();
     initCharts();
     renderTopClientsList();
+    renderAdminNotificationBell();
   }
 
   // Admin Top Navigation Tabs
@@ -648,4 +650,82 @@ document.addEventListener("DOMContentLoaded", () => {
       toast.remove();
     }, 4200);
   }
+
+  // Admin Notification Bell Logic
+  window.toggleAdminNotifDropdown = function(e) {
+    if (e) e.stopPropagation();
+    const dropdown = document.getElementById("adminNotifDropdown");
+    if (dropdown) dropdown.classList.toggle("open");
+  };
+
+  window.markAllAdminNotifsRead = function() {
+    const notifs = NexusStorage.getNotifications();
+    notifs.forEach(n => n.unread = false);
+    NexusStorage.saveNotifications(notifs);
+    renderAdminNotificationBell();
+    showToast("✓ Todas las alertas administrativas marcadas como leídas.", "info");
+  };
+
+  function initAdminNotificationBell() {
+    const bellBtn = document.getElementById("adminNotifBellBtn");
+    const dropdown = document.getElementById("adminNotifDropdown");
+
+    if (bellBtn) {
+      bellBtn.onclick = (e) => {
+        window.toggleAdminNotifDropdown(e);
+      };
+    }
+
+    document.addEventListener("click", (e) => {
+      if (dropdown && !dropdown.contains(e.target) && e.target !== bellBtn) {
+        dropdown.classList.remove("open");
+      }
+    });
+
+    renderAdminNotificationBell();
+  }
+
+  function renderAdminNotificationBell() {
+    const container = document.getElementById("adminNotifItemsContainer");
+    const badge = document.getElementById("adminNotifCountBadge");
+    const notifs = NexusStorage.getNotifications();
+    const unreadCount = notifs.filter(n => n.unread).length;
+
+    if (badge) {
+      badge.textContent = unreadCount;
+      badge.style.display = unreadCount > 0 ? "flex" : "none";
+    }
+
+    if (container) {
+      if (notifs.length === 0) {
+        container.innerHTML = `<div style="padding: 16px; text-align: center; color: #B8A99A; font-size: 0.82rem;">No hay alertas pendientes</div>`;
+      } else {
+        container.innerHTML = notifs.map(n => `
+          <div class="notif-item ${n.unread ? 'unread' : ''}" onclick="handleNotifClick('${n.link || 'secSla'}')">
+            <div class="notif-title">${n.title}</div>
+            <div class="notif-desc">${n.message}</div>
+            <div class="notif-time">⏱️ ${n.time}</div>
+          </div>
+        `).join("");
+      }
+    }
+  }
+
+  window.handleNotifClick = function(targetSection) {
+    const cleanSec = targetSection.includes("#") ? targetSection.split("#")[1] : targetSection;
+    if (cleanSec) {
+      switchAdminSection(cleanSec);
+    }
+    const dropdown = document.getElementById("adminNotifDropdown");
+    if (dropdown) dropdown.classList.remove("open");
+  };
+
+  window.logoutAdmin = function() {
+    NexusStorage.setAuthRole("guest");
+    NexusStorage.setCurrentUser(null);
+    showToast("Sesión de gerencia cerrada exitosamente.", "info");
+    setTimeout(() => {
+      window.location.href = "index.html";
+    }, 350);
+  };
 });

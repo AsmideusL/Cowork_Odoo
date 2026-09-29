@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NEXUS | Private Spaces &amp; Coworking Club</title>
   <meta name="description" content="Santuario de productividad y club privado de negocios. Reserva de salas de juntas, oficinas privadas y puestos nómadas por horas o meses con pagos SINPE Móvil y tarjeta.">
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=2.2">
 </head>
 <body>
 
@@ -27,21 +27,6 @@
       </ul>
 
       <div class="nav-actions">
-        <!-- Notification Bell -->
-        <div class="notif-bell-wrap">
-          <button class="btn-bell" id="notifBellBtn" onclick="toggleNotifDropdown(event)" title="Alertas y Notificaciones">
-            🔔
-            <span class="notif-badge" id="notifCountBadge">2</span>
-          </button>
-          <div class="notif-dropdown" id="notifDropdown">
-            <div class="notif-header">
-              <span>Notificaciones del Sistema</span>
-              <span style="font-size: 0.72rem; color: var(--gold-warm); cursor: pointer;" onclick="markAllNotifsRead()">Marcar leídas</span>
-            </div>
-            <div id="notifItemsContainer"></div>
-          </div>
-        </div>
-
         <!-- Guest Actions (When NOT logged in) -->
         <div id="navGuestActions" style="display: flex; align-items: center; gap: 10px;">
           <button class="btn btn-secondary btn-sm" onclick="openAuthModal('login')">
@@ -50,9 +35,6 @@
           <button class="btn btn-primary btn-sm" onclick="openAuthModal('signup')">
             Registrarse
           </button>
-          <a href="admin.html" class="btn btn-admin btn-sm" title="Ingreso a centro de control de gerencia">
-            ⚡ Acceso Gerencia
-          </a>
         </div>
 
         <!-- Authenticated User Profile (When logged in) -->
@@ -64,7 +46,6 @@
             ✕ Salir
           </button>
         </div>
-
       </div>
     </div>
   </header>
@@ -539,32 +520,39 @@
         <div id="authContentLogin">
           <form onsubmit="handleUserLoginForm(event)">
             <div class="field-group" style="margin-bottom: 12px;">
-              <label class="field-label">Correo Electrónico</label>
-              <input type="email" id="loginEmail" class="field-input" placeholder="ej. usuario@empresa.com" required value="mariana.rojas@techcr.io">
+              <label class="field-label">Correo Electrónico o Usuario</label>
+              <input type="text" id="loginEmail" class="field-input" placeholder="ej. usuario@empresa.com o admin" required value="admin@nexusspaces.com">
             </div>
-            <div class="field-group" style="margin-bottom: 18px;">
+            <div class="field-group" style="margin-bottom: 14px;">
               <label class="field-label">Contraseña</label>
-              <input type="password" id="loginPassword" class="field-input" placeholder="••••••••" required value="password123">
+              <input type="password" id="loginPassword" class="field-input" placeholder="••••••••" required value="admin123">
             </div>
+
+            <!-- Admin Credential Helper Pill -->
+            <div style="margin-bottom: 16px; padding: 10px 14px; background: rgba(224, 122, 95, 0.08); border: 1px solid rgba(224, 122, 95, 0.25); border-radius: 8px; font-size: 0.8rem; color: #F4E2D0; display: flex; justify-content: space-between; align-items: center;">
+              <span>👑 <strong>Acceso Gerencial:</strong> <code>admin@nexusspaces.com</code> | <code>admin123</code></span>
+              <button type="button" class="btn btn-secondary btn-sm" style="padding: 3px 8px; font-size: 0.72rem;" onclick="fillAdminCredentials()">Cargar</button>
+            </div>
+
             <button type="submit" class="btn btn-primary btn-block" style="margin-bottom: 20px;">
-              Iniciar Sesión ➔
+              Iniciar Sesión Seguro ➔
             </button>
           </form>
 
           <!-- Fast Demo Login Pills -->
           <div style="background: rgba(36,29,25,0.45); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 14px;">
             <div style="font-size: 0.76rem; color: var(--gold-warm); font-weight: 700; text-transform: uppercase; margin-bottom: 8px;">
-              Accesos Rápidos para Demostración:
+              Perfiles Demo con 1 Clic:
             </div>
             <div style="display: flex; flex-direction: column; gap: 6px;">
+              <button class="fast-sinpe-btn" style="text-align: left; border-color: var(--terracotta);" onclick="quickLoginAs('admin')">
+                👑 Lic. Roberto Alvarado (Gerencia General · Redirige a Panel Admin)
+              </button>
               <button class="fast-sinpe-btn" style="text-align: left;" onclick="quickLoginAs('cli-101')">
                 👤 Mariana Rojas Solís (Cliente Oro · 10% Descuento)
               </button>
               <button class="fast-sinpe-btn" style="text-align: left;" onclick="quickLoginAs('cli-102')">
-                👑 Alejandro Montero (Cliente Platino VIP · 15% Descuento)
-              </button>
-              <button class="fast-sinpe-btn" style="text-align: left; border-color: var(--terracotta);" onclick="quickLoginAs('admin')">
-                ⚡ Lic. Roberto Alvarado (Gerencia General &amp; Operaciones)
+                ⭐ Alejandro Montero (Cliente Platino VIP · 15% Descuento)
               </button>
             </div>
           </div>
@@ -619,7 +607,7 @@
   </footer>
 
   <!-- Scripts -->
-  <script src="js/mock_data.js"></script>
-  <script src="js/app.js"></script>
+  <script src="js/mock_data.js?v=2.2"></script>
+  <script src="js/app.js?v=2.2"></script>
 </body>
 </html>
