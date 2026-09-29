@@ -1,4 +1,4 @@
-// NEXUS COWORKING - EXECUTIVE ADMIN DASHBOARD LOGIC
+// NEXUS COWORKING - EXECUTIVE CONCIERGE & ADMIN DASHBOARD LOGIC
 document.addEventListener("DOMContentLoaded", () => {
   let activeCalendarSpaceId = "all";
   let bookings = NexusStorage.getBookings();
@@ -65,15 +65,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (pending.length === 0) {
       container.innerHTML = `
-        <div style="text-align: center; padding: 24px; color: #10B981; font-weight: 600;">
-          ✓ ¡Al día! No hay comprobantes de SINPE pendientes de verificación.
+        <div style="text-align: center; padding: 26px; color: #819870; font-weight: 600;">
+          ✓ ¡Bandeja al día! No hay comprobantes de SINPE pendientes de verificación.
         </div>
       `;
       return;
     }
 
     container.innerHTML = pending.map(item => {
-      // Calculate minutes elapsed
       const submittedTime = new Date(item.sinpeSubmittedAt || item.createdAt).getTime();
       const now = new Date().getTime();
       const elapsedMin = Math.max(1, Math.floor((now - submittedTime) / (1000 * 60)));
@@ -89,37 +88,36 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       return `
-        <div class="sla-item-card" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 18px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
-          <div style="display: flex; align-items: center; gap: 16px;">
+        <div class="sla-item-card" style="background: rgba(36, 29, 25, 0.45); border: 1px solid rgba(212, 163, 115, 0.2); border-radius: 14px; padding: 20px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 18px;">
+          <div style="display: flex; align-items: center; gap: 18px;">
             <img src="${item.sinpeVoucherUrl || 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=600&q=80'}" 
                  class="voucher-thumb" 
                  onclick="openVoucherModal('${item.id}', '${item.sinpeVoucherUrl}')" 
                  title="Haga clic para ampliar comprobante">
             <div>
-              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                <span style="font-weight: 800; color: #FFF;">${item.id}</span>
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+                <span style="font-weight: 800; color: #FFF; font-family: 'Syne', sans-serif;">${item.id}</span>
                 <span class="sla-badge-timer ${slaBadgeClass}">⏱️ ${slaStatusText}</span>
               </div>
-              <div style="font-size: 0.95rem; font-weight: 700; color: #FFF;">${item.clientName} · <span style="font-weight: normal; color: #9CA3AF;">${item.company || 'Particular'}</span></div>
-              <div style="font-size: 0.82rem; color: #9CA3AF;">
+              <div style="font-size: 0.96rem; font-weight: 700; color: #FFF;">${item.clientName} · <span style="font-weight: normal; color: #B8A99A;">${item.company || 'Particular'}</span></div>
+              <div style="font-size: 0.84rem; color: #B8A99A;">
                 📍 ${item.spaceName} | 📅 ${item.date} (${item.timeStart} - ${item.timeEnd})
               </div>
-              <div style="font-size: 0.82rem; color: #06B6D4; font-family: 'Space Grotesk', sans-serif;">
+              <div style="font-size: 0.84rem; color: var(--gold-warm); font-family: 'Syne', sans-serif;">
                 Ref SINPE: <strong>${item.sinpeRef || 'N/A'}</strong> | Monto: <strong>₡${item.totalCRC.toLocaleString()}</strong> ($${item.totalUSD})
               </div>
             </div>
           </div>
           <div style="display: flex; gap: 10px;">
             <button class="btn btn-secondary btn-sm" onclick="openVoucherModal('${item.id}', '${item.sinpeVoucherUrl}')">🔍 Ver Recibo</button>
-            <button class="btn btn-primary btn-sm" onclick="approveSinpeBooking('${item.id}')">✓ Validar & Aprobar</button>
-            <button class="btn btn-secondary btn-sm" style="color: #F87171; border-color: rgba(244,63,94,0.3);" onclick="rejectSinpeBooking('${item.id}')">✖ Rechazar</button>
+            <button class="btn btn-primary btn-sm" onclick="approveSinpeBooking('${item.id}')">✓ Validar &amp; Aprobar</button>
+            <button class="btn btn-secondary btn-sm" style="color: #E88F8A; border-color: rgba(201,90,83,0.3);" onclick="rejectSinpeBooking('${item.id}')">✖ Rechazar</button>
           </div>
         </div>
       `;
     }).join("");
   }
 
-  // Periodic SLA Timer updates (every 30s)
   function startSlaTimers() {
     setInterval(() => {
       renderSlaVerificationQueue();
@@ -135,12 +133,12 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("modalVoucherImg").src = voucherUrl || "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=600&q=80";
     document.getElementById("modalVoucherDetails").innerHTML = `
       <h3 style="color: #FFF; margin-bottom: 8px;">Comprobante de Reserva ${booking.id}</h3>
-      <p style="color: #9CA3AF; font-size: 0.9rem; margin-bottom: 4px;"><strong>Cliente:</strong> ${booking.clientName} (${booking.clientPhone})</p>
-      <p style="color: #9CA3AF; font-size: 0.9rem; margin-bottom: 4px;"><strong>Referencia Bancaria:</strong> ${booking.sinpeRef}</p>
-      <p style="color: #9CA3AF; font-size: 0.9rem; margin-bottom: 4px;"><strong>Monto esperado:</strong> ₡${booking.totalCRC.toLocaleString()}</p>
-      <p style="color: #9CA3AF; font-size: 0.9rem; margin-bottom: 16px;"><strong>Sala solicitada:</strong> ${booking.spaceName}</p>
+      <p style="color: #B8A99A; font-size: 0.9rem; margin-bottom: 4px;"><strong>Socio:</strong> ${booking.clientName} (${booking.clientPhone})</p>
+      <p style="color: #B8A99A; font-size: 0.9rem; margin-bottom: 4px;"><strong>Referencia Bancaria:</strong> ${booking.sinpeRef}</p>
+      <p style="color: #B8A99A; font-size: 0.9rem; margin-bottom: 4px;"><strong>Monto esperado:</strong> ₡${booking.totalCRC.toLocaleString()}</p>
+      <p style="color: #B8A99A; font-size: 0.9rem; margin-bottom: 18px;"><strong>Sala solicitada:</strong> ${booking.spaceName}</p>
       <div style="display: flex; gap: 10px;">
-        <button class="btn btn-primary btn-block" onclick="approveSinpeBooking('${booking.id}'); closeVoucherModal();">✓ Aprobar Pago & Emitir Factura</button>
+        <button class="btn btn-primary btn-block" onclick="approveSinpeBooking('${booking.id}'); closeVoucherModal();">✓ Aprobar Pago &amp; Emitir Factura Electrónica</button>
       </div>
     `;
 
@@ -158,13 +156,13 @@ document.addEventListener("DOMContentLoaded", () => {
       target.status = "confirmed";
       NexusStorage.saveBookings(bookings);
       initAdminDashboard();
-      showToast(`✓ Pago SINPE de la reserva ${bookingId} aprobado exitosamente. Factura electrónica emitida y notificada al cliente por email.`, "success");
+      showToast(`✓ Pago SINPE de la reserva ${bookingId} validado. Factura electrónica emitida y notificada al socio por email.`, "success");
     }
   };
 
   // Reject SINPE Booking
   window.rejectSinpeBooking = function(bookingId) {
-    const reason = prompt("Indique el motivo del rechazo del comprobante (ej: Fondos no recibidos, número de referencia no coincide):", "Monto transferido no coincide con el total.");
+    const reason = prompt("Indique el motivo del rechazo del comprobante (ej: Fondos no recibidos en cuenta, comprobante ilegible):", "Monto transferido no coincide con el total de la reserva.");
     if (reason) {
       const target = bookings.find(b => b.id === bookingId);
       if (target) {
@@ -172,7 +170,7 @@ document.addEventListener("DOMContentLoaded", () => {
         target.rejectReason = reason;
         NexusStorage.saveBookings(bookings);
         initAdminDashboard();
-        showToast(`❌ Reserva ${bookingId} rechazada. Notificación con motivo enviada al cliente.`, "warning");
+        showToast(`❌ Reserva ${bookingId} cancelada. Notificación con motivo enviada al socio.`, "warning");
       }
     }
   };
@@ -196,25 +194,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
       return `
         <tr>
-          <td><strong style="color: #FFF;">${b.id}</strong></td>
+          <td><strong style="color: #FFF; font-family: 'Syne', sans-serif;">${b.id}</strong></td>
           <td>
             <div style="font-weight: 700; color: #FFF;">${b.clientName}</div>
-            <div style="font-size: 0.75rem; color: #9CA3AF;">${b.company || 'Particular'} · ${b.clientPhone}</div>
+            <div style="font-size: 0.78rem; color: #B8A99A;">${b.company || 'Particular'} · ${b.clientPhone}</div>
           </td>
           <td>${b.spaceName}</td>
           <td>
             <div>${b.date}</div>
-            <div style="font-size: 0.75rem; color: #9CA3AF;">${b.timeStart} - ${b.timeEnd}</div>
+            <div style="font-size: 0.78rem; color: #B8A99A;">${b.timeStart} - ${b.timeEnd}</div>
           </td>
           <td>
-            <div style="font-weight: 700; color: #10B981;">₡${b.totalCRC.toLocaleString()}</div>
-            <div style="font-size: 0.75rem; color: #06B6D4;">${b.paymentMethod === 'sinpe' ? '📱 SINPE' : '💳 Tarjeta'}</div>
+            <div style="font-weight: 700; color: var(--terracotta);">₡${b.totalCRC.toLocaleString()}</div>
+            <div style="font-size: 0.78rem; color: var(--gold-warm);">${b.paymentMethod === 'sinpe' ? '📱 SINPE' : '💳 Tarjeta'}</div>
           </td>
           <td>${statusBadge}</td>
           <td>
-            <div style="display: flex; gap: 6px;">
+            <div style="display: flex; gap: 8px;">
               <button class="btn btn-secondary btn-sm" onclick="adminOpenReschedule('${b.id}')" title="Reprogramar reserva">🔄</button>
-              <button class="btn btn-secondary btn-sm" onclick="adminCancelBooking('${b.id}')" title="Cancelar reserva" style="color: #F87171;">✖</button>
+              <button class="btn btn-secondary btn-sm" onclick="adminCancelBooking('${b.id}')" title="Cancelar reserva" style="color: #E88F8A;">✖</button>
             </div>
           </td>
         </tr>
@@ -239,7 +237,7 @@ document.addEventListener("DOMContentLoaded", () => {
     b.status = "rescheduled";
     NexusStorage.saveBookings(bookings);
     initAdminDashboard();
-    showToast(`✓ Reserva ${b.id} reprogramada administrativamente con notificación al cliente.`, "success");
+    showToast(`✓ Reserva ${b.id} reprogramada administrativamente con notificación al socio.`, "success");
   };
 
   window.adminCancelBooking = function(bookingId) {
@@ -260,8 +258,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const container = document.getElementById("adminRoomCalendarView");
     if (!selector || !container) return;
 
-    // Populate spaces in dropdown
-    selector.innerHTML = `<option value="all">Todas las salas / Calendario General</option>` + 
+    selector.innerHTML = `<option value="all">Todas las salas / Vista General</option>` + 
       spaces.map(s => `<option value="${s.id}" ${activeCalendarSpaceId === s.id ? 'selected' : ''}>${s.name}</option>`).join("");
 
     selector.onchange = (e) => {
@@ -269,32 +266,30 @@ document.addEventListener("DOMContentLoaded", () => {
       renderRoomCalendarViewer();
     };
 
-    // Filter bookings for this room
     const filteredBookings = activeCalendarSpaceId === "all" 
       ? bookings.filter(b => b.status !== "cancelled")
       : bookings.filter(b => b.spaceId === activeCalendarSpaceId && b.status !== "cancelled");
 
-    // Display timeline for today and upcoming days
     const days = ["2026-09-29", "2026-09-30", "2026-10-01", "2026-10-02"];
 
     container.innerHTML = `
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(245px, 1fr)); gap: 18px;">
         ${days.map(d => {
           const dayBookings = filteredBookings.filter(b => b.date === d);
           return `
-            <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 14px;">
-              <div style="font-weight: 700; color: #FFF; font-size: 0.95rem; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 6px;">
-                📅 ${d} ${d === '2026-09-29' ? '<span style="color:#10B981; font-size:0.75rem;">(HOY)</span>' : ''}
+            <div style="background: rgba(36, 29, 25, 0.4); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 16px;">
+              <div style="font-weight: 700; color: #FFF; font-size: 0.98rem; margin-bottom: 12px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 8px;">
+                📅 ${d} ${d === '2026-09-29' ? '<span style="color:var(--terracotta); font-size:0.78rem;">(HOY)</span>' : ''}
               </div>
-              ${dayBookings.length === 0 ? `<div style="font-size: 0.8rem; color: #6B7280; text-align: center; padding: 16px 0;">Sin reservas</div>` : ''}
+              ${dayBookings.length === 0 ? `<div style="font-size: 0.82rem; color: #7D6F63; text-align: center; padding: 20px 0;">Sin reservas agendadas</div>` : ''}
               ${dayBookings.map(b => `
-                <div style="background: rgba(16, 185, 129, 0.08); border-left: 3px solid #10B981; border-radius: 4px; padding: 8px 10px; margin-bottom: 8px;">
-                  <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700; color: #FFF;">
+                <div style="background: rgba(224, 122, 95, 0.09); border-left: 3px solid var(--terracotta); border-radius: 6px; padding: 10px 12px; margin-bottom: 10px;">
+                  <div style="display: flex; justify-content: space-between; font-size: 0.82rem; font-weight: 700; color: #FFF;">
                     <span>⏰ ${b.timeStart} - ${b.timeEnd}</span>
-                    <span style="color: #06B6D4;">${b.id}</span>
+                    <span style="color: var(--gold-warm); font-family: 'Syne', sans-serif;">${b.id}</span>
                   </div>
-                  <div style="font-size: 0.82rem; color: #FFF;">${b.spaceName}</div>
-                  <div style="font-size: 0.75rem; color: #9CA3AF;">👤 ${b.clientName}</div>
+                  <div style="font-size: 0.86rem; color: #FFF;">${b.spaceName}</div>
+                  <div style="font-size: 0.78rem; color: #B8A99A;">👤 ${b.clientName}</div>
                 </div>
               `).join("")}
             </div>
@@ -304,7 +299,7 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
   }
 
-  // Render Charts with Chart.js
+  // Render Charts with Warm Palette in Chart.js
   let roomsChartInstance = null;
   let revenueChartInstance = null;
 
@@ -322,17 +317,17 @@ document.addEventListener("DOMContentLoaded", () => {
             label: 'Horas Reservadas este Mes',
             data: [142, 98, 76, 185, 64],
             backgroundColor: [
-              'rgba(16, 185, 129, 0.7)',
-              'rgba(6, 182, 212, 0.7)',
-              'rgba(139, 92, 246, 0.7)',
-              'rgba(245, 158, 11, 0.7)',
-              'rgba(244, 63, 94, 0.7)'
+              'rgba(224, 122, 95, 0.75)',  // Warm Terracotta
+              'rgba(212, 163, 115, 0.75)', // Champagne Gold
+              'rgba(233, 196, 106, 0.75)', // Warm Amber
+              'rgba(129, 152, 112, 0.75)', // Sage Green
+              'rgba(201, 90, 83, 0.75)'    // Rosewood
             ],
             borderColor: [
-              '#10B981', '#06B6D4', '#8B5CF6', '#F59E0B', '#F43F5E'
+              '#E07A5F', '#D4A373', '#E9C46A', '#819870', '#C95A53'
             ],
-            borderWidth: 1,
-            borderRadius: 6
+            borderWidth: 1.5,
+            borderRadius: 8
           }]
         },
         options: {
@@ -341,8 +336,8 @@ document.addEventListener("DOMContentLoaded", () => {
             legend: { display: false }
           },
           scales: {
-            y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#9CA3AF' } },
-            x: { grid: { display: false }, ticks: { color: '#9CA3AF' } }
+            y: { grid: { color: 'rgba(224, 196, 172, 0.08)' }, ticks: { color: '#B8A99A' } },
+            x: { grid: { display: false }, ticks: { color: '#B8A99A' } }
           }
         }
       });
@@ -353,17 +348,17 @@ document.addEventListener("DOMContentLoaded", () => {
       revenueChartInstance = new Chart(ctxRevenue, {
         type: 'doughnut',
         data: {
-          labels: ['Por Horas', 'Por Días', 'Planes Mensuales'],
+          labels: ['Por Horas', 'Por Jornadas', 'Planes Mensuales'],
           datasets: [{
             data: [35, 25, 40],
-            backgroundColor: ['#10B981', '#06B6D4', '#8B5CF6'],
+            backgroundColor: ['#E07A5F', '#D4A373', '#819870'],
             borderWidth: 0
           }]
         },
         options: {
           responsive: true,
           plugins: {
-            legend: { position: 'bottom', labels: { color: '#9CA3AF' } }
+            legend: { position: 'bottom', labels: { color: '#B8A99A', font: { family: 'Plus Jakarta Sans' } } }
           }
         }
       });
@@ -378,17 +373,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const clients = NexusStorage.getClients();
     list.innerHTML = clients.map((c, index) => {
       return `
-        <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
-          <div style="display: flex; align-items: center; gap: 12px;">
-            <span style="font-weight: 800; color: #F59E0B; font-size: 1.1rem;">#${index + 1}</span>
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px; border-bottom: 1px solid rgba(224, 196, 172, 0.08);">
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <span style="font-weight: 800; color: var(--gold-warm); font-size: 1.15rem; font-family: 'Syne', sans-serif;">#${index + 1}</span>
             <div>
-              <div style="font-weight: 700; color: #FFF; font-size: 0.95rem;">${c.name}</div>
-              <div style="font-size: 0.75rem; color: #9CA3AF;">${c.company} · Céd: ${c.idNumber}</div>
+              <div style="font-weight: 700; color: #FFF; font-size: 0.98rem;">${c.name}</div>
+              <div style="font-size: 0.78rem; color: #B8A99A;">${c.company} · Céd: ${c.idNumber}</div>
             </div>
           </div>
           <div style="text-align: right;">
-            <div style="font-weight: 700; color: #10B981; font-size: 0.9rem;">₡${c.totalSpentCRC.toLocaleString()}</div>
-            <div style="font-size: 0.75rem; color: #FBBF24;">⭐ ${c.loyaltyTier} (${c.totalHoursBooked} hrs)</div>
+            <div style="font-weight: 700; color: var(--terracotta); font-size: 0.94rem; font-family: 'Syne', sans-serif;">₡${c.totalSpentCRC.toLocaleString()}</div>
+            <div style="font-size: 0.78rem; color: var(--gold-warm);">⭐ ${c.loyaltyTier} (${c.totalHoursBooked} hrs)</div>
           </div>
         </div>
       `;

@@ -1,4 +1,4 @@
-// NEXUS COWORKING - FRONTEND CLIENT APPLICATION LOGIC
+// NEXUS COWORKING - FRONTEND CLIENT APPLICATION LOGIC (BOUTIQUE LUXURY EDITION)
 document.addEventListener("DOMContentLoaded", () => {
   let currentFilterType = "hour";
   let selectedSpace = null;
@@ -44,13 +44,13 @@ document.addEventListener("DOMContentLoaded", () => {
       if (currentFilterType === "hour") {
         priceDisplay = `₡${sp.priceHour.toLocaleString()} <span class="price-sub">/ hora ($${sp.priceHourUSD})</span>`;
       } else if (currentFilterType === "day") {
-        priceDisplay = `₡${sp.priceDay.toLocaleString()} <span class="price-sub">/ día ($${sp.priceDayUSD})</span>`;
+        priceDisplay = `₡${sp.priceDay.toLocaleString()} <span class="price-sub">/ jornada ($${sp.priceDayUSD})</span>`;
       } else {
         priceDisplay = `₡${sp.priceMonth.toLocaleString()} <span class="price-sub">/ mes ($${sp.priceMonthUSD})</span>`;
       }
 
       const statusBadge = sp.status === "available" 
-        ? `<div class="status-dot-badge"><span class="dot-free"></span> Libre hoy</div>`
+        ? `<div class="status-dot-badge"><span class="dot-free"></span> Disponible hoy</div>`
         : `<div class="status-dot-badge"><span class="dot-busy"></span> Con reservas</div>`;
 
       return `
@@ -83,7 +83,6 @@ document.addEventListener("DOMContentLoaded", () => {
       `;
     }).join("");
 
-    // Attach event listeners to book buttons
     document.querySelectorAll(".btn-book-space").forEach(btn => {
       btn.addEventListener("click", (e) => {
         e.stopPropagation();
@@ -92,7 +91,6 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
 
-    // Make card clickable
     document.querySelectorAll(".space-card").forEach(card => {
       card.addEventListener("click", () => {
         const id = card.getAttribute("data-space-id");
@@ -103,12 +101,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function getBadgeClass(badge) {
     if (badge.includes("VIP")) return "badge-vip";
-    if (badge.includes("Privada")) return "badge-private";
+    if (badge.includes("Suite") || badge.includes("Privada")) return "badge-private";
     if (badge.includes("Acústica")) return "badge-pod";
     return "badge-flex";
   }
 
-  // Interactive 2D Floor Plan logic
+  // Interactive 2D Architectural Floor Plan
   function setupFloorPlanInteractions() {
     const zones = document.querySelectorAll(".fp-zone");
     const previewDrawer = document.getElementById("fpPreviewDrawer");
@@ -125,28 +123,26 @@ document.addEventListener("DOMContentLoaded", () => {
           zone.classList.add("zone-busy");
         }
 
-        // Mouse hover
-        zone.addEventListener("mouseenter", (e) => {
+        zone.addEventListener("mouseenter", () => {
           if (!previewDrawer) return;
           previewDrawer.style.display = "block";
           previewDrawer.innerHTML = `
-            <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 8px;">
-              <img src="${space.image}" style="width: 50px; height: 50px; border-radius: 8px; object-fit: cover;">
+            <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 10px;">
+              <img src="${space.image}" style="width: 54px; height: 54px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border-gold);">
               <div>
-                <h4 style="color: #FFF; font-size: 0.95rem;">${space.name}</h4>
-                <span style="font-size: 0.75rem; color: #10B981;">● ${space.status === 'available' ? 'Disponible para reservar' : 'Con horarios reservados'}</span>
+                <h4 style="color: #FFF; font-size: 0.98rem;">${space.name}</h4>
+                <span style="font-size: 0.78rem; color: var(--sage-green);">● ${space.status === 'available' ? 'Disponible para agendar' : 'Horarios tomados hoy'}</span>
               </div>
             </div>
-            <p style="font-size: 0.8rem; color: #9CA3AF; margin-bottom: 12px;">${space.description.slice(0, 85)}...</p>
+            <p style="font-size: 0.82rem; color: #B8A99A; margin-bottom: 14px;">${space.description.slice(0, 88)}...</p>
             <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span style="font-weight: 700; color: #FFF; font-size: 0.9rem;">₡${space.priceHour.toLocaleString()} / hr</span>
+              <span style="font-weight: 700; color: var(--champagne); font-size: 0.95rem; font-family: 'Syne', sans-serif;">₡${space.priceHour.toLocaleString()} / hr</span>
               <button class="btn btn-primary btn-sm" id="fpQuickBookBtn">Reservar</button>
             </div>
           `;
           document.getElementById("fpQuickBookBtn").onclick = () => openBookingModal(space.id);
         });
 
-        // Click on zone opens booking modal directly
         zone.addEventListener("click", () => {
           openBookingModal(space.id);
         });
@@ -154,7 +150,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Filter Buttons
   function setupSearchEvents() {
     document.querySelectorAll(".booking-type-toggle .toggle-pill").forEach(pill => {
       pill.addEventListener("click", () => {
@@ -197,7 +192,6 @@ document.addEventListener("DOMContentLoaded", () => {
     title.textContent = selectedSpace.name;
     meta.textContent = `📍 ${selectedSpace.floor} | 👥 Capacidad: ${selectedSpace.capacity} pers. | ⭐ ${selectedSpace.badge}`;
 
-    // Render Steps
     switchModalStep(1);
     renderCalendarSlots();
     renderAddonsSelector();
@@ -208,7 +202,6 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("bookingModal").classList.remove("open");
   };
 
-  // Switch Wizard steps inside modal
   window.switchModalStep = function(stepNum) {
     document.querySelectorAll(".modal-step-content").forEach(el => el.style.display = "none");
     document.getElementById(`modalStep${stepNum}`).style.display = "block";
@@ -224,7 +217,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  // Render Time Slots for Selected Room
   function renderCalendarSlots() {
     const container = document.getElementById("modalSlotsContainer");
     const dateInput = document.getElementById("bookingModalDate");
@@ -236,14 +228,12 @@ document.addEventListener("DOMContentLoaded", () => {
       renderCalendarSlots();
     };
 
-    // Typical coworking hours: 08:00 to 18:00
     const timeSlots = [
       "08:00 - 09:00", "09:00 - 10:00", "10:00 - 11:00", "11:00 - 12:00",
       "12:00 - 13:00", "13:00 - 14:00", "14:00 - 15:00", "15:00 - 16:00",
       "16:00 - 17:00", "17:00 - 18:00", "18:00 - 19:00", "19:00 - 20:00"
     ];
 
-    // Check booked slots from mock data and local storage bookings
     const bookings = NexusStorage.getBookings().filter(b => 
       b.spaceId === selectedSpace.id && 
       b.date === selectedDate && 
@@ -273,7 +263,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Render Addon Services list
   function renderAddonsSelector() {
     const list = document.getElementById("addonsList");
     if (!list) return;
@@ -281,14 +270,14 @@ document.addEventListener("DOMContentLoaded", () => {
     list.innerHTML = NEXUS_DATA.addons.map(addon => {
       return `
         <div class="addon-item" data-addon-id="${addon.id}">
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <span style="font-size: 1.3rem;">${addon.icon}</span>
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <span style="font-size: 1.35rem;">${addon.icon}</span>
             <div>
-              <div style="font-weight: 600; color: #FFF; font-size: 0.9rem;">${addon.name}</div>
-              <div style="font-size: 0.75rem; color: #9CA3AF;">+₡${addon.price.toLocaleString()} ($${addon.priceUSD}) ${addon.unit}</div>
+              <div style="font-weight: 600; color: #FFF; font-size: 0.92rem;">${addon.name}</div>
+              <div style="font-size: 0.76rem; color: var(--gold-warm);">+₡${addon.price.toLocaleString()} ($${addon.priceUSD}) ${addon.unit}</div>
             </div>
           </div>
-          <input type="checkbox" class="addon-checkbox" data-id="${addon.id}" style="width: 18px; height: 18px; accent-color: #10B981; cursor: pointer;">
+          <input type="checkbox" class="addon-checkbox" data-id="${addon.id}" style="width: 18px; height: 18px; accent-color: #E07A5F; cursor: pointer;">
         </div>
       `;
     }).join("");
@@ -309,13 +298,11 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Pre-checkout validation and go to Step 2 (Client Confirmation)
   window.validateStep1 = function() {
     if (!selectedTimeSlot && currentFilterType === "hour") {
       showToast("⚠️ Por favor selecciona una franja horaria en el calendario.", "warning");
       return;
     }
-    // Prefill user form
     document.getElementById("custName").value = currentUser.name;
     document.getElementById("custIdNumber").value = currentUser.idNumber;
     document.getElementById("custEmail").value = currentUser.email;
@@ -326,7 +313,6 @@ document.addEventListener("DOMContentLoaded", () => {
     switchModalStep(2);
   };
 
-  // Step 2 to Step 3 (Payment)
   window.validateStep2 = function() {
     const name = document.getElementById("custName").value.trim();
     const idNum = document.getElementById("custIdNumber").value.trim();
@@ -334,11 +320,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const phone = document.getElementById("custPhone").value.trim();
 
     if (!name || !idNum || !email || !phone) {
-      showToast("⚠️ Por favor completa los campos requeridos del cliente.", "warning");
+      showToast("⚠️ Por favor completa los campos requeridos del socio.", "warning");
       return;
     }
 
-    // Update currentUser in case changed
     currentUser.name = name;
     currentUser.idNumber = idNum;
     currentUser.email = email;
@@ -351,7 +336,6 @@ document.addEventListener("DOMContentLoaded", () => {
     switchModalStep(3);
   };
 
-  // Render Checkout Summary
   let calculatedTotalCRC = 0;
   let calculatedTotalUSD = 0;
 
@@ -396,26 +380,25 @@ document.addEventListener("DOMContentLoaded", () => {
         <span>${selectedDate} (${selectedTimeSlot || 'Jornada Completa'})</span>
       </div>
       ${selectedAddonObjs.map(a => `
-        <div class="summary-row" style="font-size: 0.82rem; color: #9CA3AF;">
+        <div class="summary-row" style="font-size: 0.84rem; color: #B8A99A;">
           <span>+ ${a.name}</span>
           <span>₡${a.price.toLocaleString()}</span>
         </div>
       `).join("")}
-      <div class="summary-row" style="color: #F59E0B;">
-        <span>Descuento Fidelidad (${currentUser.loyaltyTier} - ${currentUser.discountRate * 100}%):</span>
+      <div class="summary-row" style="color: var(--gold-warm);">
+        <span>Descuento de Membresía (${currentUser.loyaltyTier} - ${currentUser.discountRate * 100}%):</span>
         <span>-₡${discountCRC.toLocaleString()}</span>
       </div>
       <div class="summary-row total">
         <span>Total a Pagar:</span>
-        <span style="color: #10B981;">₡${calculatedTotalCRC.toLocaleString()} <span style="font-size: 0.85rem; font-weight: normal; color: #9CA3AF;">($${calculatedTotalUSD} USD)</span></span>
+        <span style="color: var(--terracotta);">₡${calculatedTotalCRC.toLocaleString()} <span style="font-size: 0.88rem; font-weight: normal; color: var(--gold-warm);">($${calculatedTotalUSD} USD)</span></span>
       </div>
     `;
 
     document.getElementById("sinpeTotalCRC").textContent = `₡${calculatedTotalCRC.toLocaleString()} CRC`;
   }
 
-  // Toggle Payment Methods (Card vs SINPE)
-  let currentPaymentMethod = "sinpe"; // default
+  let currentPaymentMethod = "sinpe";
   window.selectPaymentTab = function(method) {
     currentPaymentMethod = method;
     document.querySelectorAll(".pay-tab").forEach(tab => tab.classList.remove("active"));
@@ -430,7 +413,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  // Mock File Upload for SINPE Receipt
   let uploadedVoucherUrl = "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=600&q=80";
   const voucherInput = document.getElementById("sinpeFile");
   if (voucherInput) {
@@ -441,8 +423,8 @@ document.addEventListener("DOMContentLoaded", () => {
         reader.onload = (event) => {
           uploadedVoucherUrl = event.target.result;
           document.getElementById("sinpeUploadLabel").innerHTML = `
-            <div style="color: #10B981; font-weight: 700;">✓ Comprobante cargado exitosamente</div>
-            <div style="font-size: 0.8rem; color: #9CA3AF;">${file.name} (${(file.size / 1024).toFixed(1)} KB)</div>
+            <div style="color: var(--sage-green); font-weight: 700;">✓ Comprobante cargado exitosamente</div>
+            <div style="font-size: 0.8rem; color: #B8A99A;">${file.name} (${(file.size / 1024).toFixed(1)} KB)</div>
           `;
         };
         reader.readAsDataURL(file);
@@ -450,7 +432,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Complete Booking Transaction
   window.processBookingPayment = function() {
     const bookingId = "RES-" + Math.floor(1000 + Math.random() * 9000);
     const times = selectedTimeSlot ? selectedTimeSlot.split(" - ") : ["08:00", "17:00"];
@@ -494,12 +475,10 @@ document.addEventListener("DOMContentLoaded", () => {
       createdAt: new Date().toISOString()
     };
 
-    // Save into state
     const bookings = NexusStorage.getBookings();
     bookings.unshift(newBooking);
     NexusStorage.saveBookings(bookings);
 
-    // Update space status if booked today
     const todayStr = new Date().toISOString().split("T")[0];
     if (selectedDate === todayStr) {
       const spaces = NexusStorage.getSpaces();
@@ -510,7 +489,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // Show Success Pass Screen
     showSuccessPass(newBooking);
   };
 
@@ -528,67 +506,63 @@ document.addEventListener("DOMContentLoaded", () => {
       statusBadge.className = "chip chip-pending";
       statusBadge.innerHTML = "⏳ Pendiente de Aprobación SINPE";
       document.getElementById("passStatusNotice").innerHTML = `
-        <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 8px; padding: 12px; margin-top: 14px; font-size: 0.85rem; color: #FBBF24;">
-          <strong>Comprobante en revisión administrativa:</strong> Nuestro equipo validará el comprobante bancario en menos de 15 minutos (SLA activo). Recibirá una confirmación a su correo y WhatsApp.
+        <div style="background: rgba(233, 196, 106, 0.1); border: 1px solid rgba(233, 196, 106, 0.35); border-radius: 10px; padding: 14px; margin-top: 16px; font-size: 0.86rem; color: #F4E2D0;">
+          <strong>Comprobante en validación concierge:</strong> Nuestro equipo confirmará la acreditación bancaria en menos de 15 minutos (SLA activo). Recibirá confirmación inmediata por WhatsApp y correo electrónico.
         </div>
       `;
     } else {
       statusBadge.className = "chip chip-confirmed";
-      statusBadge.innerHTML = "✓ Confirmado & Pagado";
+      statusBadge.innerHTML = "✓ Confirmado &amp; Pagado";
       document.getElementById("passStatusNotice").innerHTML = `
-        <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 8px; padding: 12px; margin-top: 14px; font-size: 0.85rem; color: #34D399;">
-          <strong>¡Reserva Exitosa!</strong> Hemos enviado los accesos biométricos y la factura electrónica a <em>${booking.clientEmail}</em>.
+        <div style="background: rgba(129, 152, 112, 0.12); border: 1px solid rgba(129, 152, 112, 0.35); border-radius: 10px; padding: 14px; margin-top: 16px; font-size: 0.86rem; color: #E8F0E4;">
+          <strong>¡Reserva Exitosa!</strong> Hemos enviado los accesos biométricos y la factura electrónica oficial a <em>${booking.clientEmail}</em>.
         </div>
       `;
     }
 
-    // Render QR Code (SVG generator)
     renderQrCode("passQrCode", booking.qrCodeData);
     showToast(`🎉 Reserva ${booking.id} generada exitosamente.`, "success");
     renderSpacesCatalog();
   }
 
-  // QR Code SVG Generator helper
   function renderQrCode(containerId, codeData) {
     const container = document.getElementById(containerId);
     if (!container) return;
-    // Generate high-contrast SVG QR pattern
     container.innerHTML = `
-      <svg viewBox="0 0 100 100" width="100%" height="100%" style="border-radius: 6px;">
-        <rect width="100" height="100" fill="#FFFFFF"/>
-        <!-- Corner Markers -->
-        <rect x="10" y="10" width="22" height="22" fill="#0F172A"/>
-        <rect x="14" y="14" width="14" height="14" fill="#FFFFFF"/>
-        <rect x="17" y="17" width="8" height="8" fill="#10B981"/>
+      <svg viewBox="0 0 100 100" width="100%" height="100%" style="border-radius: 8px;">
+        <rect width="100" height="100" fill="#FBF8F4"/>
+        <!-- Corner Markers in Warm Terracotta & Deep Charcoal -->
+        <rect x="10" y="10" width="22" height="22" fill="#241C18"/>
+        <rect x="14" y="14" width="14" height="14" fill="#FBF8F4"/>
+        <rect x="17" y="17" width="8" height="8" fill="#E07A5F"/>
 
-        <rect x="68" y="10" width="22" height="22" fill="#0F172A"/>
-        <rect x="72" y="14" width="14" height="14" fill="#FFFFFF"/>
-        <rect x="75" y="17" width="8" height="8" fill="#10B981"/>
+        <rect x="68" y="10" width="22" height="22" fill="#241C18"/>
+        <rect x="72" y="14" width="14" height="14" fill="#FBF8F4"/>
+        <rect x="75" y="17" width="8" height="8" fill="#E07A5F"/>
 
-        <rect x="10" y="68" width="22" height="22" fill="#0F172A"/>
-        <rect x="14" y="72" width="14" height="14" fill="#FFFFFF"/>
-        <rect x="17" y="75" width="8" height="8" fill="#10B981"/>
+        <rect x="10" y="68" width="22" height="22" fill="#241C18"/>
+        <rect x="14" y="72" width="14" height="14" fill="#FBF8F4"/>
+        <rect x="17" y="75" width="8" height="8" fill="#E07A5F"/>
 
-        <!-- Mock Matrix data blocks -->
-        <rect x="38" y="12" width="6" height="6" fill="#0F172A"/>
-        <rect x="48" y="18" width="6" height="6" fill="#0F172A"/>
-        <rect x="38" y="26" width="8" height="6" fill="#0F172A"/>
-        <rect x="52" y="32" width="6" height="12" fill="#0F172A"/>
-        <rect x="12" y="42" width="8" height="8" fill="#0F172A"/>
-        <rect x="28" y="42" width="6" height="6" fill="#10B981"/>
-        <rect x="40" y="44" width="10" height="10" fill="#0F172A"/>
-        <rect x="62" y="44" width="8" height="6" fill="#0F172A"/>
-        <rect x="76" y="42" width="14" height="6" fill="#0F172A"/>
-        <rect x="38" y="64" width="6" height="8" fill="#0F172A"/>
-        <rect x="52" y="62" width="8" height="6" fill="#0F172A"/>
-        <rect x="68" y="68" width="8" height="8" fill="#10B981"/>
-        <rect x="80" y="78" width="10" height="10" fill="#0F172A"/>
-        <rect x="40" y="78" width="18" height="8" fill="#0F172A"/>
+        <!-- Warm Data blocks -->
+        <rect x="38" y="12" width="6" height="6" fill="#241C18"/>
+        <rect x="48" y="18" width="6" height="6" fill="#241C18"/>
+        <rect x="38" y="26" width="8" height="6" fill="#241C18"/>
+        <rect x="52" y="32" width="6" height="12" fill="#241C18"/>
+        <rect x="12" y="42" width="8" height="8" fill="#241C18"/>
+        <rect x="28" y="42" width="6" height="6" fill="#D4A373"/>
+        <rect x="40" y="44" width="10" height="10" fill="#241C18"/>
+        <rect x="62" y="44" width="8" height="6" fill="#241C18"/>
+        <rect x="76" y="42" width="14" height="6" fill="#241C18"/>
+        <rect x="38" y="64" width="6" height="8" fill="#241C18"/>
+        <rect x="52" y="62" width="8" height="6" fill="#241C18"/>
+        <rect x="68" y="68" width="8" height="8" fill="#D4A373"/>
+        <rect x="80" y="78" width="10" height="10" fill="#241C18"/>
+        <rect x="40" y="78" width="18" height="8" fill="#241C18"/>
       </svg>
     `;
   }
 
-  // Setup Client Portal Events & Modal
   function setupClientPortalEvents() {
     const navReservations = document.getElementById("navMyReservations");
     if (navReservations) {
@@ -604,7 +578,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const bookings = NexusStorage.getBookings().filter(b => b.clientId === currentUser.id);
 
     if (bookings.length === 0) {
-      container.innerHTML = `<p style="color: #9CA3AF; text-align: center; padding: 20px;">No tienes reservas activas por el momento.</p>`;
+      container.innerHTML = `<p style="color: #B8A99A; text-align: center; padding: 24px;">No tienes reservas activas por el momento.</p>`;
     } else {
       container.innerHTML = bookings.map(b => {
         let statusBadge = "";
@@ -619,18 +593,18 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         return `
-          <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+          <div style="background: rgba(36, 29, 25, 0.45); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 18px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
             <div>
-              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
-                <span style="font-weight: 800; color: #FFF; font-size: 1rem;">${b.id}</span>
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
+                <span style="font-weight: 800; color: #FFF; font-size: 1.05rem; font-family: 'Syne', sans-serif;">${b.id}</span>
                 ${statusBadge}
-                <span style="font-size: 0.8rem; color: #06B6D4;">${b.paymentMethod === 'sinpe' ? '📱 SINPE Móvil' : '💳 Tarjeta'}</span>
+                <span style="font-size: 0.82rem; color: var(--gold-warm);">${b.paymentMethod === 'sinpe' ? '📱 SINPE Móvil' : '💳 Tarjeta'}</span>
               </div>
-              <div style="font-size: 0.95rem; font-weight: 600; color: #FFF;">${b.spaceName}</div>
-              <div style="font-size: 0.82rem; color: #9CA3AF;">📅 Fecha: ${b.date} | ⏰ Horario: ${b.timeStart} - ${b.timeEnd}</div>
-              <div style="font-size: 0.82rem; color: #10B981; font-weight: 600;">Total: ₡${b.totalCRC.toLocaleString()} ($${b.totalUSD})</div>
+              <div style="font-size: 0.98rem; font-weight: 600; color: #FFF;">${b.spaceName}</div>
+              <div style="font-size: 0.84rem; color: #B8A99A;">📅 Fecha: ${b.date} | ⏰ Horario: ${b.timeStart} - ${b.timeEnd}</div>
+              <div style="font-size: 0.84rem; color: var(--terracotta); font-weight: 600;">Total: ₡${b.totalCRC.toLocaleString()} ($${b.totalUSD})</div>
             </div>
-            <div style="display: flex; gap: 8px;">
+            <div style="display: flex; gap: 10px;">
               <button class="btn btn-secondary btn-sm" onclick="viewDigitalPass('${b.id}')">Ver Pase QR</button>
               <button class="btn btn-primary btn-sm" onclick="openRescheduleModal('${b.id}')">Reprogramar 🔄</button>
             </div>
@@ -646,7 +620,6 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("portalModal").classList.remove("open");
   };
 
-  // View Existing Digital Pass from portal
   window.viewDigitalPass = function(bookingId) {
     const booking = NexusStorage.getBookings().find(b => b.id === bookingId);
     if (!booking) return;
@@ -656,7 +629,6 @@ document.addEventListener("DOMContentLoaded", () => {
     modal.classList.add("open");
   };
 
-  // Reschedule Modal Logic
   let currentRescheduleBookingId = null;
   window.openRescheduleModal = function(bookingId) {
     currentRescheduleBookingId = bookingId;
@@ -700,7 +672,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  // Switch / Edit Client Profile Modal
   function openClientProfileModal() {
     const modal = document.getElementById("profileModal");
     if (!modal) return;
@@ -728,10 +699,9 @@ document.addEventListener("DOMContentLoaded", () => {
     NexusStorage.setCurrentUser(currentUser);
     initUserBadge();
     closeProfileModal();
-    showToast("✓ Perfil de cliente actualizado.", "success");
+    showToast("✓ Perfil de socio actualizado.", "success");
   };
 
-  // Toast Notification helper
   window.showToast = function(message, type = "info") {
     let container = document.getElementById("toastContainer");
     if (!container) {
@@ -746,6 +716,6 @@ document.addEventListener("DOMContentLoaded", () => {
     container.appendChild(toast);
     setTimeout(() => {
       toast.remove();
-    }, 4000);
+    }, 4200);
   };
 });
