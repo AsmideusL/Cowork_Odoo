@@ -1,2 +1,5 @@
 [build]
   publish = "webapp_demo"
+
+[build.environment]
+  NETLIFY_DRAWER_DISABLED = "true"

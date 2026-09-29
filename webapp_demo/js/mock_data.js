@@ -315,13 +315,25 @@ function _safeRemove(key) {
   delete _memCache[key];
 }
 
+// Purge any stale storage keys from older test builds
+try {
+  if (typeof localStorage !== "undefined") {
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith("nexus_") && !k.endsWith("_v10")) {
+        localStorage.removeItem(k);
+      }
+    }
+  }
+} catch(e) {}
+
 const NexusStorage = {
   getSpaces: () => {
     try {
-      const data = _safeGet("nexus_spaces_v6");
+      const data = _safeGet("nexus_spaces_v10");
       if (data) {
         const parsed = JSON.parse(data);
-        if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].priceHour && parsed[0].image) {
+        if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].priceHour && parsed[0].image && !parsed[0].image.includes("unsplash")) {
           return parsed;
         }
       }
@@ -330,11 +342,11 @@ const NexusStorage = {
     return NEXUS_DATA.spaces;
   },
   saveSpaces: (spaces) => {
-    _safeSet("nexus_spaces_v6", JSON.stringify(spaces));
+    _safeSet("nexus_spaces_v10", JSON.stringify(spaces));
   },
   getBookings: () => {
     try {
-      const data = _safeGet("nexus_bookings_v6");
+      const data = _safeGet("nexus_bookings_v10");
       if (data) {
         const parsed = JSON.parse(data);
         if (Array.isArray(parsed) && parsed.length > 0) return parsed;
@@ -344,11 +356,11 @@ const NexusStorage = {
     return NEXUS_DATA.bookings;
   },
   saveBookings: (bookings) => {
-    _safeSet("nexus_bookings_v6", JSON.stringify(bookings));
+    _safeSet("nexus_bookings_v10", JSON.stringify(bookings));
   },
   getClients: () => {
     try {
-      const data = _safeGet("nexus_clients_v6");
+      const data = _safeGet("nexus_clients_v10");
       if (data) {
         const parsed = JSON.parse(data);
         if (Array.isArray(parsed) && parsed.length > 0) return parsed;
@@ -358,11 +370,11 @@ const NexusStorage = {
     return NEXUS_DATA.clients;
   },
   saveClients: (clients) => {
-    _safeSet("nexus_clients_v6", JSON.stringify(clients));
+    _safeSet("nexus_clients_v10", JSON.stringify(clients));
   },
   getCurrentUser: () => {
     try {
-      const user = _safeGet("nexus_current_user_v6");
+      const user = _safeGet("nexus_current_user_v10");
       return user ? JSON.parse(user) : null;
     } catch(e) {
       return null;
@@ -370,40 +382,40 @@ const NexusStorage = {
   },
   setCurrentUser: (user) => {
     if (user) {
-      _safeSet("nexus_current_user_v6", JSON.stringify(user));
+      _safeSet("nexus_current_user_v10", JSON.stringify(user));
     } else {
-      _safeRemove("nexus_current_user_v6");
+      _safeRemove("nexus_current_user_v10");
     }
   },
   getAuthRole: () => {
-    return _safeGet("nexus_auth_role_v6") || null;
+    return _safeGet("nexus_auth_role_v10") || null;
   },
   setAuthRole: (role) => {
     if (role) {
-      _safeSet("nexus_auth_role_v6", role);
+      _safeSet("nexus_auth_role_v10", role);
     } else {
-      _safeRemove("nexus_auth_role_v6");
+      _safeRemove("nexus_auth_role_v10");
     }
   },
   logout: () => {
-    _safeRemove("nexus_current_user_v6");
-    _safeRemove("nexus_auth_role_v6");
+    _safeRemove("nexus_current_user_v10");
+    _safeRemove("nexus_auth_role_v10");
   },
   getNotifications: () => {
     try {
-      const data = _safeGet("nexus_notifications_v6");
+      const data = _safeGet("nexus_notifications_v10");
       if (data) return JSON.parse(data);
     } catch(e) {}
     return NEXUS_DATA.notifications;
   },
   saveNotifications: (notifs) => {
-    _safeSet("nexus_notifications_v6", JSON.stringify(notifs));
+    _safeSet("nexus_notifications_v10", JSON.stringify(notifs));
   }
 };
 
 // Initial Seed with error protection
 try {
-  if (!_safeGet("nexus_spaces_v6")) {
+  if (!_safeGet("nexus_spaces_v10")) {
     NexusStorage.saveSpaces(NEXUS_DATA.spaces);
     NexusStorage.saveBookings(NEXUS_DATA.bookings);
     NexusStorage.saveClients(NEXUS_DATA.clients);
