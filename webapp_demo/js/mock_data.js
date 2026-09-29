@@ -22,7 +22,7 @@ const NEXUS_DATA = {
       priceHourUSD: 28,
       priceDayUSD: 180,
       priceMonthUSD: 2300,
-      image: "https://images.unsplash.com/photo-1577495508048-b635879837f1?auto=format&fit=crop&w=1000&q=80",
+      image: "assets/room_horizon.svg",
       description: "Mesa artesanal de nogal macizo, iluminación indirecta cálida regulable, videoconferencia Polycom 4K y ventanales con vista a la cordillera.",
       amenities: ["Pantalla 4K 85\" OLED", "Videoconferencia Polycom", "Pizarra de Cristal Templado", "Café de Especialidad Nespresso", "WiFi 6 Dedicado 1Gbps", "Climatización Silenciosa"],
       zoneId: "zone-horizon",
@@ -46,7 +46,7 @@ const NEXUS_DATA = {
       priceHourUSD: 22,
       priceDayUSD: 140,
       priceMonthUSD: 1600,
-      image: "https://images.unsplash.com/photo-1497215842964-222b430dc094?auto=format&fit=crop&w=1000&q=80",
+      image: "assets/room_alpha.svg",
       description: "Suite corporativa privada con sillas ergonómicas de cuero, acceso biométrico Smart PIN 24/7 y acabados en roble y bronce cepillado.",
       amenities: ["5 Puestos Ergonómicos", "Acceso Cerradura Smart PIN", "Pizarra Magnética", "Mini-bar Ejecutivo", "Línea Telefónica IP", "Servicio Concierge"],
       zoneId: "zone-alpha",
@@ -69,7 +69,7 @@ const NEXUS_DATA = {
       priceHourUSD: 9,
       priceDayUSD: 52,
       priceMonthUSD: 600,
-      image: "https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?auto=format&fit=crop&w=1000&q=80",
+      image: "assets/room_oasis.svg",
       description: "Cabina individual con tapicería acústica de fieltro nórdico (-35dB), luz fotográfica LED de temperatura regulable y ventilación suave.",
       amenities: ["Insonorización -35dB", "Luz Facial Fotográfica", "Conexión Ethernet Gigabit", "Ventilación Filtrada", "Cargador Rápido Qi"],
       zoneId: "zone-oasis",
@@ -92,7 +92,7 @@ const NEXUS_DATA = {
       priceHourUSD: 6,
       priceDayUSD: 30,
       priceMonthUSD: 340,
-      image: "https://images.unsplash.com/photo-1527192491265-7e15c55b1ed2?auto=format&fit=crop&w=1000&q=80",
+      image: "assets/room_lounge.svg",
       description: "Área abierta con luz natural abundante, plantas interiores, acceso a la barra barista con café de origen y terraza ajardinada al aire libre.",
       amenities: ["Escritorios Compartidos", "Cafetería & Snacks Artesanales", "Terraza & Jardín Zen", "Eventos de Networking", "Casilleros con Clave"],
       zoneId: "zone-lounge",
@@ -114,7 +114,7 @@ const NEXUS_DATA = {
       priceHourUSD: 34,
       priceDayUSD: 210,
       priceMonthUSD: 2650,
-      image: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=1000&q=80",
+      image: "assets/room_creative.svg",
       description: "Espacio dinámico modular para sesiones de Design Thinking y workshops estratégicos. Paredes continuas de cristal escribible y proyector láser.",
       amenities: ["Muro de Vidrio Escribible", "Proyector Láser Tiro Corto", "Kits de Facilitación", "Mobiliario Modular Reconfigurable", "Sonido Hi-Fi Inalámbrico"],
       zoneId: "zone-creative",
@@ -196,7 +196,7 @@ const NEXUS_DATA = {
       totalUSD: 105,
       paymentMethod: "sinpe",
       sinpeRef: "SINPE-992104-BN",
-      sinpeVoucherUrl: "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=600&q=80",
+      sinpeVoucherUrl: "assets/voucher_bn.svg",
       sinpeSubmittedAt: "2026-09-29T12:20:00",
       status: "pending_sinpe",
       qrCodeData: "NEXUS-RES-9844-HORIZON-VALID",
@@ -246,7 +246,7 @@ const NEXUS_DATA = {
       totalUSD: 19,
       paymentMethod: "sinpe",
       sinpeRef: "SINPE-884210-BAC",
-      sinpeVoucherUrl: "https://images.unsplash.com/photo-1554224154-26032ffc0d07?auto=format&fit=crop&w=600&q=80",
+      sinpeVoucherUrl: "assets/voucher_bac.svg",
       sinpeSubmittedAt: "2026-09-29T12:05:00",
       status: "pending_sinpe",
       qrCodeData: "NEXUS-RES-9824-OASIS-PENDING",
@@ -295,63 +295,92 @@ const NEXUS_DATA = {
 
 const NexusStorage = {
   getSpaces: () => {
-    const data = localStorage.getItem("nexus_spaces_v4");
-    return data ? JSON.parse(data) : NEXUS_DATA.spaces;
+    try {
+      const data = localStorage.getItem("nexus_spaces_v5");
+      if (data) {
+        const parsed = JSON.parse(data);
+        if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].priceHour && parsed[0].image) {
+          return parsed;
+        }
+      }
+    } catch(e) {}
+    NexusStorage.saveSpaces(NEXUS_DATA.spaces);
+    return NEXUS_DATA.spaces;
   },
   saveSpaces: (spaces) => {
-    localStorage.setItem("nexus_spaces_v4", JSON.stringify(spaces));
+    localStorage.setItem("nexus_spaces_v5", JSON.stringify(spaces));
   },
   getBookings: () => {
-    const data = localStorage.getItem("nexus_bookings_v4");
-    return data ? JSON.parse(data) : NEXUS_DATA.bookings;
+    try {
+      const data = localStorage.getItem("nexus_bookings_v5");
+      if (data) {
+        const parsed = JSON.parse(data);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch(e) {}
+    NexusStorage.saveBookings(NEXUS_DATA.bookings);
+    return NEXUS_DATA.bookings;
   },
   saveBookings: (bookings) => {
-    localStorage.setItem("nexus_bookings_v4", JSON.stringify(bookings));
+    localStorage.setItem("nexus_bookings_v5", JSON.stringify(bookings));
   },
   getClients: () => {
-    const data = localStorage.getItem("nexus_clients_v4");
-    return data ? JSON.parse(data) : NEXUS_DATA.clients;
+    try {
+      const data = localStorage.getItem("nexus_clients_v5");
+      if (data) {
+        const parsed = JSON.parse(data);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch(e) {}
+    NexusStorage.saveClients(NEXUS_DATA.clients);
+    return NEXUS_DATA.clients;
   },
   saveClients: (clients) => {
-    localStorage.setItem("nexus_clients_v4", JSON.stringify(clients));
+    localStorage.setItem("nexus_clients_v5", JSON.stringify(clients));
   },
-  // User Authentication state
   getCurrentUser: () => {
-    const user = localStorage.getItem("nexus_current_user_v4");
-    return user ? JSON.parse(user) : null; // Returns null if not logged in!
+    try {
+      const user = localStorage.getItem("nexus_current_user_v5");
+      return user ? JSON.parse(user) : null;
+    } catch(e) {
+      return null;
+    }
   },
   setCurrentUser: (user) => {
     if (user) {
-      localStorage.setItem("nexus_current_user_v4", JSON.stringify(user));
+      localStorage.setItem("nexus_current_user_v5", JSON.stringify(user));
     } else {
-      localStorage.removeItem("nexus_current_user_v4");
+      localStorage.removeItem("nexus_current_user_v5");
     }
   },
   getAuthRole: () => {
-    return localStorage.getItem("nexus_auth_role_v4") || null; // null if guest
+    return localStorage.getItem("nexus_auth_role_v5") || null;
   },
   setAuthRole: (role) => {
     if (role) {
-      localStorage.setItem("nexus_auth_role_v4", role);
+      localStorage.setItem("nexus_auth_role_v5", role);
     } else {
-      localStorage.removeItem("nexus_auth_role_v4");
+      localStorage.removeItem("nexus_auth_role_v5");
     }
   },
   logout: () => {
-    localStorage.removeItem("nexus_current_user_v4");
-    localStorage.removeItem("nexus_auth_role_v4");
+    localStorage.removeItem("nexus_current_user_v5");
+    localStorage.removeItem("nexus_auth_role_v5");
   },
   getNotifications: () => {
-    const data = localStorage.getItem("nexus_notifications");
-    return data ? JSON.parse(data) : NEXUS_DATA.notifications;
+    try {
+      const data = localStorage.getItem("nexus_notifications_v5");
+      if (data) return JSON.parse(data);
+    } catch(e) {}
+    return NEXUS_DATA.notifications;
   },
   saveNotifications: (notifs) => {
-    localStorage.setItem("nexus_notifications", JSON.stringify(notifs));
+    localStorage.setItem("nexus_notifications_v5", JSON.stringify(notifs));
   }
 };
 
 // Seed baseline spaces and bookings if not initialized
-if (!localStorage.getItem("nexus_spaces_v4")) {
+if (!localStorage.getItem("nexus_spaces_v5")) {
   NexusStorage.saveSpaces(NEXUS_DATA.spaces);
   NexusStorage.saveBookings(NEXUS_DATA.bookings);
   NexusStorage.saveClients(NEXUS_DATA.clients);

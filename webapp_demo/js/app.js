@@ -105,41 +105,66 @@ document.addEventListener("DOMContentLoaded", () => {
     showToast("✓ Todas las notificaciones marcadas como leídas", "info");
   };
 
-  // Render Spaces in Catalog with Filters
-  function renderSpacesCatalog(filterCategory = "all", minCapacity = 1) {
+  // Render Spaces in Catalog with Accurate Category & Capacity Filters
+  window.renderSpacesCatalog = function(filterCategory = "all", minCapacity = "all") {
     const grid = document.getElementById("spacesGrid");
     if (!grid) return;
     const spaces = NexusStorage.getSpaces();
 
     const filtered = spaces.filter(sp => {
+      // Category filter
       if (filterCategory !== "all" && sp.category !== filterCategory) return false;
-      if (minCapacity !== "all" && sp.capacity < parseInt(minCapacity, 10)) return false;
+
+      // Capacity filter
+      if (minCapacity !== "all") {
+        const cap = parseInt(minCapacity, 10);
+        if (cap === 1 && sp.capacity > 2) return false;
+        if (cap === 5 && (sp.capacity < 2 || sp.capacity > 6)) return false;
+        if (cap === 12 && (sp.capacity < 7 || sp.capacity > 15)) return false;
+        if (cap === 25 && sp.capacity < 16) return false;
+      }
       return true;
     });
 
     if (filtered.length === 0) {
-      grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #B8A99A;">No se encontraron espacios con los filtros seleccionados.</div>`;
+      grid.innerHTML = `
+        <div style="grid-column: 1/-1; text-align: center; padding: 50px 20px; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md);">
+          <div style="font-size: 2.2rem; margin-bottom: 10px;">🔍</div>
+          <h4 style="color: #FFF; font-size: 1.15rem; margin-bottom: 6px;">No se encontraron espacios para este filtro</h4>
+          <p style="color: #B8A99A; font-size: 0.88rem; margin-bottom: 16px;">Pruebe seleccionando 'Todas las salas y suites' o 'Cualquier aforo'.</p>
+          <button class="btn btn-secondary btn-sm" onclick="resetFilters()">Restablecer Todos los Filtros</button>
+        </div>
+      `;
       return;
     }
 
     grid.innerHTML = filtered.map(sp => {
+      const priceHour = sp.priceHour || 15000;
+      const priceHourUSD = sp.priceHourUSD || 28;
+      const priceDay = sp.priceDay || 95000;
+      const priceDayUSD = sp.priceDayUSD || 180;
+      const priceMonth = sp.priceMonth || 1200000;
+      const priceMonthUSD = sp.priceMonthUSD || 2300;
+
       let priceDisplay = "";
       if (currentFilterType === "hour") {
-        priceDisplay = `₡${sp.priceHour.toLocaleString()} <span class="price-sub">/ hora ($${sp.priceHourUSD})</span>`;
+        priceDisplay = `₡${priceHour.toLocaleString()} <span class="price-sub">/ hora ($${priceHourUSD})</span>`;
       } else if (currentFilterType === "day") {
-        priceDisplay = `₡${sp.priceDay.toLocaleString()} <span class="price-sub">/ jornada ($${sp.priceDayUSD})</span>`;
+        priceDisplay = `₡${priceDay.toLocaleString()} <span class="price-sub">/ jornada ($${priceDayUSD})</span>`;
       } else {
-        priceDisplay = `₡${sp.priceMonth.toLocaleString()} <span class="price-sub">/ mes ($${sp.priceMonthUSD})</span>`;
+        priceDisplay = `₡${priceMonth.toLocaleString()} <span class="price-sub">/ mes ($${priceMonthUSD})</span>`;
       }
 
       const statusBadge = sp.status === "available" 
         ? `<div class="status-dot-badge"><span class="dot-free"></span> Disponible hoy</div>`
         : `<div class="status-dot-badge"><span class="dot-busy"></span> Con reservas</div>`;
 
+      const safeImg = sp.image || "assets/room_horizon.svg";
+
       return `
-        <div class="space-card" data-space-id="${sp.id}">
+        <div class="space-card" data-space-id="${sp.id}" onclick="openBookingModal('${sp.id}')" style="cursor: pointer;">
           <div class="card-img-wrap">
-            <img src="${sp.image}" alt="${sp.name}" class="card-img" loading="lazy">
+            <img src="${safeImg}" alt="${sp.name}" class="card-img" onerror="this.src='assets/room_horizon.svg'">
             <span class="card-badge ${getBadgeClass(sp.badge)}">${sp.badge}</span>
             ${statusBadge}
           </div>
@@ -155,13 +180,13 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
             <div class="card-pricing-row">
               <div class="price-box">
-                <span class="price-amount">${priceDisplay}</span>
+                <span class="price-amount" style="font-size: 1.28rem; font-weight: 700; color: #FFF; font-family: 'Plus Jakarta Sans', sans-serif;">${priceDisplay}</span>
               </div>
               <div style="display: flex; gap: 8px;">
-                <button class="btn btn-secondary btn-sm btn-inspect-cal" data-id="${sp.id}" title="Ver agenda completa">
+                <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); openRoomCalendarModal('${sp.id}')" title="Ver agenda completa">
                   📅 Calendario
                 </button>
-                <button class="btn btn-primary btn-sm btn-book-space" data-id="${sp.id}">
+                <button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); openBookingModal('${sp.id}')">
                   Reservar ➔
                 </button>
               </div>
@@ -170,30 +195,10 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
       `;
     }).join("");
-
-    // Attach event listeners
-    document.querySelectorAll(".btn-book-space").forEach(btn => {
-      btn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        openBookingModal(btn.getAttribute("data-id"));
-      });
-    });
-
-    document.querySelectorAll(".btn-inspect-cal").forEach(btn => {
-      btn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        openRoomCalendarModal(btn.getAttribute("data-id"));
-      });
-    });
-
-    document.querySelectorAll(".space-card").forEach(card => {
-      card.addEventListener("click", () => {
-        openBookingModal(card.getAttribute("data-space-id"));
-      });
-    });
-  }
+  };
 
   function getBadgeClass(badge) {
+    if (!badge) return "badge-flex";
     if (badge.includes("VIP")) return "badge-vip";
     if (badge.includes("Suite") || badge.includes("Privada")) return "badge-private";
     if (badge.includes("Acústica")) return "badge-pod";
@@ -222,7 +227,7 @@ document.addEventListener("DOMContentLoaded", () => {
           previewDrawer.style.display = "block";
           previewDrawer.innerHTML = `
             <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 10px;">
-              <img src="${space.image}" style="width: 54px; height: 54px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border-gold);">
+              <img src="${space.image || 'assets/room_horizon.svg'}" onerror="this.src='assets/room_horizon.svg'" style="width: 54px; height: 54px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border-gold);">
               <div>
                 <h4 style="color: #FFF; font-size: 0.98rem;">${space.name}</h4>
                 <span style="font-size: 0.78rem; color: var(--sage-green);">● ${space.status === 'available' ? 'Disponible para agendar' : 'Horarios tomados hoy'}</span>
@@ -230,7 +235,7 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
             <p style="font-size: 0.82rem; color: #B8A99A; margin-bottom: 14px;">${space.description.slice(0, 88)}...</p>
             <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span style="font-weight: 700; color: var(--champagne); font-size: 0.95rem; font-family: 'Syne', sans-serif;">₡${space.priceHour.toLocaleString()} / hr</span>
+              <span style="font-weight: 700; color: var(--champagne); font-size: 0.95rem; font-family: 'Plus Jakarta Sans', sans-serif;">₡${(space.priceHour || 15000).toLocaleString()} / hr</span>
               <button class="btn btn-primary btn-sm" id="fpQuickBookBtn">Reservar</button>
             </div>
           `;
@@ -244,43 +249,48 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Filter application handlers
+  window.applyFilters = function() {
+    const categorySelect = document.getElementById("searchCategory");
+    const capacitySelect = document.getElementById("searchCapacity");
+    const cat = categorySelect ? categorySelect.value : "all";
+    const cap = capacitySelect ? capacitySelect.value : "all";
+    renderSpacesCatalog(cat, cap);
+  };
+
+  window.resetFilters = function() {
+    const categorySelect = document.getElementById("searchCategory");
+    const capacitySelect = document.getElementById("searchCapacity");
+    if (categorySelect) categorySelect.value = "all";
+    if (capacitySelect) capacitySelect.value = "all";
+    renderSpacesCatalog("all", "all");
+  };
+
+  window.setFilterType = function(type) {
+    currentFilterType = type;
+    ["pillHour", "pillDay", "pillMonth"].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove("active");
+    });
+    if (type === "hour" && document.getElementById("pillHour")) document.getElementById("pillHour").classList.add("active");
+    if (type === "day" && document.getElementById("pillDay")) document.getElementById("pillDay").classList.add("active");
+    if (type === "month" && document.getElementById("pillMonth")) document.getElementById("pillMonth").classList.add("active");
+    applyFilters();
+  };
+
   // Search Bar Filter Events
   function setupSearchEvents() {
-    const pills = [
-      document.getElementById("pillHour"),
-      document.getElementById("pillDay"),
-      document.getElementById("pillMonth")
-    ];
-
-    pills.forEach(pill => {
-      if (!pill) return;
-      pill.addEventListener("click", () => {
-        pills.forEach(p => p && p.classList.remove("active"));
-        pill.classList.add("active");
-        currentFilterType = pill.getAttribute("data-type");
-        renderSpacesCatalog(
-          document.getElementById("searchCategory").value,
-          document.getElementById("searchCapacity").value
-        );
-      });
-    });
-
     const categorySelect = document.getElementById("searchCategory");
     const capacitySelect = document.getElementById("searchCapacity");
     const btnSearch = document.getElementById("btnFilterSearch");
-
-    function applyFilters() {
-      const cat = categorySelect ? categorySelect.value : "all";
-      const cap = capacitySelect ? capacitySelect.value : "all";
-      renderSpacesCatalog(cat, cap);
-    }
 
     if (categorySelect) categorySelect.onchange = applyFilters;
     if (capacitySelect) capacitySelect.onchange = applyFilters;
     if (btnSearch) {
       btnSearch.onclick = () => {
         applyFilters();
-        document.getElementById("catalogo").scrollIntoView({ behavior: "smooth" });
+        const catSection = document.getElementById("catalogo");
+        if (catSection) catSection.scrollIntoView({ behavior: "smooth" });
       };
     }
   }
@@ -702,21 +712,21 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   // Instant Demo SINPE Vouchers
-  let uploadedVoucherUrl = "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=600&q=80";
+  let uploadedVoucherUrl = "assets/voucher_bn.svg";
   window.loadDemoVoucher = function(type) {
     if (type === "bac") {
-      uploadedVoucherUrl = "https://images.unsplash.com/photo-1554224154-26032ffc0d07?auto=format&fit=crop&w=600&q=80";
+      uploadedVoucherUrl = "assets/voucher_bac.svg";
       document.getElementById("sinpeRefInput").value = "BAC-" + Math.floor(100000 + Math.random() * 900000);
       document.getElementById("sinpeUploadLabel").innerHTML = `
         <div style="color: var(--sage-green); font-weight: 700;">✓ Comprobante Demo BAC San José Vinculado</div>
-        <div style="font-size: 0.8rem; color: #B8A99A;">transferencia_bac_verificada.jpg (184 KB)</div>
+        <div style="font-size: 0.8rem; color: #B8A99A;">transferencia_bac_verificada.svg</div>
       `;
     } else {
-      uploadedVoucherUrl = "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=600&q=80";
+      uploadedVoucherUrl = "assets/voucher_bn.svg";
       document.getElementById("sinpeRefInput").value = "BNCR-" + Math.floor(100000 + Math.random() * 900000);
       document.getElementById("sinpeUploadLabel").innerHTML = `
         <div style="color: var(--sage-green); font-weight: 700;">✓ Comprobante Demo Banco Nacional Vinculado</div>
-        <div style="font-size: 0.8rem; color: #B8A99A;">recibo_sinpe_bncr.pdf (210 KB)</div>
+        <div style="font-size: 0.8rem; color: #B8A99A;">recibo_sinpe_bncr.svg</div>
       `;
     }
     showToast("✓ Comprobante bancario simulado cargado con éxito.", "success");
@@ -759,7 +769,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (currentPaymentMethod === "card") {
-      btn.innerHTML = "⏳ Procesando con pasarela Odoo...";
+      btn.innerHTML = "⏳ Procesando pago seguro...";
       btn.disabled = true;
       setTimeout(() => {
         btn.innerHTML = "Confirmar &amp; Finalizar Reserva ➔";

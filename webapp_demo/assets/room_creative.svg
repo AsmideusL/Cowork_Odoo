@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="100%" height="100%">
+  <defs>
+    <linearGradient id="labBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1B171A"/>
+      <stop offset="60%" stop-color="#171213"/>
+      <stop offset="100%" stop-color="#0E0B0C"/>
+    </linearGradient>
+    <linearGradient id="glassWhiteboard" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#3A3238"/>
+      <stop offset="50%" stop-color="#52454E"/>
+      <stop offset="100%" stop-color="#2D262C"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="800" height="500" fill="url(#labBg)"/>
+
+  <!-- Floor-to-Ceiling Magnetic Glass Writing Wall -->
+  <rect x="60" y="40" width="460" height="240" rx="8" fill="url(#glassWhiteboard)" stroke="#D4A373" stroke-width="2"/>
+  
+  <!-- Post-its / Design Thinking Sticky Notes -->
+  <rect x="90" y="70" width="35" height="35" rx="3" fill="#E9C46A" transform="rotate(-4 90 70)"/>
+  <rect x="135" y="72" width="35" height="35" rx="3" fill="#E07A5F" transform="rotate(3 135 72)"/>
+  <rect x="180" y="68" width="35" height="35" rx="3" fill="#819870" transform="rotate(-2 180 68)"/>
+  <rect x="225" y="75" width="35" height="35" rx="3" fill="#F4E2D0" transform="rotate(5 225 75)"/>
+
+  <rect x="95" y="120" width="35" height="35" rx="3" fill="#819870" transform="rotate(2 95 120)"/>
+  <rect x="140" y="118" width="35" height="35" rx="3" fill="#E9C46A" transform="rotate(-3 140 118)"/>
+  <rect x="185" y="125" width="35" height="35" rx="3" fill="#E07A5F" transform="rotate(4 185 125)"/>
+
+  <!-- Diagram Scribbles on Glass -->
+  <line x1="280" y1="90" x2="380" y2="90" stroke="rgba(255,255,255,0.7)" stroke-width="2" stroke-dasharray="4,4"/>
+  <circle cx="330" cy="140" r="28" fill="none" stroke="#E07A5F" stroke-width="2"/>
+  <text x="330" y="145" fill="#FFF" font-family="'Plus Jakarta Sans', sans-serif" font-size="10" font-weight="700" text-anchor="middle">SPRINT</text>
+
+  <!-- Laser Short-Throw Projector Beam -->
+  <polygon points="560,40 580,40 760,250 540,250" fill="rgba(212,163,115,0.08)"/>
+  <rect x="560" y="30" width="30" height="15" rx="3" fill="#14100E" stroke="#D4A373" stroke-width="1.5"/>
+
+  <!-- Projected Innovation Canvas (Right Wall) -->
+  <rect x="540" y="70" width="200" height="140" rx="6" fill="#141820" stroke="#819870" stroke-width="1.5"/>
+  <text x="640" y="120" fill="#F4E2D0" font-family="'Plus Jakarta Sans', sans-serif" font-size="12" font-weight="700" text-anchor="middle">WORKSHOP LAB</text>
+  <text x="640" y="140" fill="#819870" font-family="'Plus Jakarta Sans', sans-serif" font-size="9.5" text-anchor="middle">Design Thinking Canvas</text>
+
+  <!-- Modular Reconfigurable Mobile Tables on Wheels -->
+  <polygon points="120,440 380,440 350,330 150,330" fill="#4A342B" stroke="#8E4F32" stroke-width="2"/>
+  <circle cx="140" cy="445" r="5" fill="#D4A373"/>
+  <circle cx="360" cy="445" r="5" fill="#D4A373"/>
+
+  <polygon points="430,440 690,440 660,330 460,330" fill="#4A342B" stroke="#8E4F32" stroke-width="2"/>
+  <circle cx="450" cy="445" r="5" fill="#D4A373"/>
+  <circle cx="670" cy="445" r="5" fill="#D4A373"/>
+
+  <!-- Ergonomic Colorful Stools -->
+  <ellipse cx="200" cy="420" rx="25" ry="10" fill="#E07A5F"/>
+  <ellipse cx="300" cy="420" rx="25" ry="10" fill="#E9C46A"/>
+  <ellipse cx="510" cy="420" rx="25" ry="10" fill="#819870"/>
+  <ellipse cx="610" cy="420" rx="25" ry="10" fill="#D4A373"/>
+
+  <!-- Badge Overlay -->
+  <rect x="570" y="445" width="205" height="35" rx="17" fill="rgba(26,21,18,0.92)" stroke="#E07A5F" stroke-width="1.5"/>
+  <text x="672" y="468" fill="#F4E2D0" font-family="'Plus Jakarta Sans', sans-serif" font-size="12" font-weight="700" text-anchor="middle">💡 Creative Lab · 18 Pax</text>
+</svg>

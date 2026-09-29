@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 700" width="100%" height="100%">
+  <rect width="500" height="700" rx="16" fill="#FFFFFF"/>
+  <rect width="500" height="90" rx="16" fill="#DA291C"/>
+  <rect y="70" width="500" height="20" fill="#DA291C"/>
+  <text x="250" y="55" fill="#FFFFFF" font-family="'Plus Jakarta Sans', sans-serif" font-size="22" font-weight="800" text-anchor="middle" letter-spacing="1">BAC CREDOMATIC</text>
+  <text x="250" y="130" fill="#1C1B1F" font-family="'Plus Jakarta Sans', sans-serif" font-size="16" font-weight="700" text-anchor="middle">Comprobante de Transferencia SINPE Móvil</text>
+  <circle cx="250" cy="180" r="30" fill="#E8F5E9"/>
+  <text x="250" y="188" fill="#2E7D32" font-size="26" text-anchor="middle">✓</text>
+  <text x="250" y="235" fill="#2E7D32" font-family="'Plus Jakarta Sans', sans-serif" font-size="14" font-weight="700" text-anchor="middle">TRANSFERENCIA EXITOSA</text>
+  <text x="250" y="275" fill="#1C1B1F" font-family="'Plus Jakarta Sans', sans-serif" font-size="32" font-weight="800" text-anchor="middle">₡55,500.00</text>
+  <line x1="40" y1="305" x2="460" y2="305" stroke="#E0E0E0" stroke-width="1"/>
+  <g font-family="'Plus Jakarta Sans', sans-serif" font-size="13" fill="#616161">
+    <text x="40" y="340">Destino (Teléfono):</text>
+    <text x="460" y="340" text-anchor="end" font-weight="700" fill="#212121">8888-6398</text>
+    <text x="40" y="380">Nombre Destinatario:</text>
+    <text x="460" y="380" text-anchor="end" font-weight="700" fill="#212121">NEXUS COWORKING SPA</text>
+    <text x="40" y="420">Cédula Jurídica:</text>
+    <text x="460" y="420" text-anchor="end" font-weight="700" fill="#212121">3-101-789012</text>
+    <text x="40" y="460">Referencia SINPE:</text>
+    <text x="460" y="460" text-anchor="end" font-weight="700" fill="#DA291C">BAC-99482104</text>
+    <text x="40" y="500">Fecha y Hora:</text>
+    <text x="460" y="500" text-anchor="end" font-weight="700" fill="#212121">29/09/2026 12:20:15</text>
+    <text x="40" y="540">Motivo / Descripción:</text>
+    <text x="460" y="540" text-anchor="end" font-weight="700" fill="#212121">Reserva Boardroom Horizon</text>
+  </g>
+  <rect x="40" y="585" width="420" height="70" rx="8" fill="#F5F5F5"/>
+  <text x="250" y="625" fill="#757575" font-family="'Plus Jakarta Sans', sans-serif" font-size="11" text-anchor="middle">Documento emitido electrónicamente por BAC San José S.A.</text>
+</svg>

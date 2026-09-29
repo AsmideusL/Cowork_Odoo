@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 700" width="100%" height="100%">
+  <rect width="500" height="700" rx="16" fill="#FFFFFF"/>
+  <rect width="500" height="90" rx="16" fill="#004C97"/>
+  <rect y="70" width="500" height="20" fill="#004C97"/>
+  <text x="250" y="55" fill="#FFFFFF" font-family="'Plus Jakarta Sans', sans-serif" font-size="22" font-weight="800" text-anchor="middle" letter-spacing="1">BANCO NACIONAL</text>
+  <text x="250" y="130" fill="#1C1B1F" font-family="'Plus Jakarta Sans', sans-serif" font-size="16" font-weight="700" text-anchor="middle">Comprobante Oficial SINPE Móvil</text>
+  <circle cx="250" cy="180" r="30" fill="#E1F5FE"/>
+  <text x="250" y="188" fill="#0288D1" font-size="26" text-anchor="middle">✓</text>
+  <text x="250" y="235" fill="#0288D1" font-family="'Plus Jakarta Sans', sans-serif" font-size="14" font-weight="700" text-anchor="middle">FONDOS DEPOSITADOS</text>
+  <text x="250" y="275" fill="#1C1B1F" font-family="'Plus Jakarta Sans', sans-serif" font-size="32" font-weight="800" text-anchor="middle">₡10,000.00</text>
+  <line x1="40" y1="305" x2="460" y2="305" stroke="#E0E0E0" stroke-width="1"/>
+  <g font-family="'Plus Jakarta Sans', sans-serif" font-size="13" fill="#616161">
+    <text x="40" y="340">Teléfono Acreditado:</text>
+    <text x="460" y="340" text-anchor="end" font-weight="700" fill="#212121">8888-6398</text>
+    <text x="40" y="380">Titular de Destino:</text>
+    <text x="460" y="380" text-anchor="end" font-weight="700" fill="#212121">NEXUS COWORKING SPA</text>
+    <text x="40" y="420">Identificación:</text>
+    <text x="460" y="420" text-anchor="end" font-weight="700" fill="#212121">3-101-789012</text>
+    <text x="40" y="460">Número de Referencia:</text>
+    <text x="460" y="460" text-anchor="end" font-weight="700" fill="#004C97">BNCR-88421045</text>
+    <text x="40" y="500">Fecha / Hora:</text>
+    <text x="460" y="500" text-anchor="end" font-weight="700" fill="#212121">29/09/2026 12:05:32</text>
+    <text x="40" y="540">Detalle:</text>
+    <text x="460" y="540" text-anchor="end" font-weight="700" fill="#212121">Reserva Focus Pod Oasis</text>
+  </g>
+  <rect x="40" y="585" width="420" height="70" rx="8" fill="#F5F5F5"/>
+  <text x="250" y="625" fill="#757575" font-family="'Plus Jakarta Sans', sans-serif" font-size="11" text-anchor="middle">Banco Nacional de Costa Rica · Transacción Validada</text>
+</svg>

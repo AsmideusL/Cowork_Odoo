@@ -23,7 +23,7 @@
       <ul class="nav-links">
         <li><a href="#catalogo" class="nav-link active">Colección de Espacios</a></li>
         <li><a href="#croquis" class="nav-link">Plano Arquitectónico 2D</a></li>
-        <li id="navMyReservationsItem" style="display: none;"><a href="javascript:void(0)" id="navMyReservations" class="nav-link">Mis Reservas</a></li>
+        <li id="navMyReservationsItem" style="display: none;"><a href="javascript:void(0)" id="navMyReservations" class="nav-link" onclick="openClientPortalModal()">Mis Reservas</a></li>
       </ul>
 
       <div class="nav-actions">
@@ -87,14 +87,14 @@
       <!-- Booking Search & Filter Bar -->
       <div class="search-bar-wrap">
         <div class="booking-type-toggle">
-          <button class="toggle-pill active" id="pillHour" data-type="hour">⏱️ Por Horas</button>
-          <button class="toggle-pill" id="pillDay" data-type="day">📅 Por Jornada / Días</button>
-          <button class="toggle-pill" id="pillMonth" data-type="month">🏢 Membresía Mensual</button>
+          <button class="toggle-pill active" id="pillHour" data-type="hour" onclick="setFilterType('hour')">⏱️ Por Horas</button>
+          <button class="toggle-pill" id="pillDay" data-type="day" onclick="setFilterType('day')">📅 Por Jornada / Días</button>
+          <button class="toggle-pill" id="pillMonth" data-type="month" onclick="setFilterType('month')">🏢 Membresía Mensual</button>
         </div>
         <div class="search-fields">
           <div class="field-group">
             <label class="field-label">Tipología del Espacio</label>
-            <select class="field-select" id="searchCategory">
+            <select class="field-select" id="searchCategory" onchange="applyFilters()">
               <option value="all">Todas las salas y suites</option>
               <option value="meeting">Salas de Juntas VIP</option>
               <option value="private">Suites Corporativas</option>
@@ -105,11 +105,11 @@
           </div>
           <div class="field-group">
             <label class="field-label">Fecha de Reserva</label>
-            <input type="date" class="field-input" id="searchDate">
+            <input type="date" class="field-input" id="searchDate" onchange="applyFilters()">
           </div>
           <div class="field-group">
             <label class="field-label">Aforo Requerido</label>
-            <select class="field-select" id="searchCapacity">
+            <select class="field-select" id="searchCapacity" onchange="applyFilters()">
               <option value="all">Cualquier aforo</option>
               <option value="1">Individual (1 Persona)</option>
               <option value="5">Sesión Privada (2 a 6 pers.)</option>
@@ -118,7 +118,7 @@
             </select>
           </div>
           <div>
-            <button class="btn btn-primary" id="btnFilterSearch">
+            <button class="btn btn-primary" id="btnFilterSearch" onclick="applyFilters(); document.getElementById('catalogo').scrollIntoView({behavior: 'smooth'});">
               Filtrar Espacios ➔
             </button>
           </div>
@@ -127,12 +127,28 @@
     </div>
   </section>
 
+  <!-- Spaces Catalog Section (Positioned Directly Under Search) -->
+  <section class="container" id="catalogo" style="padding-top: 25px;">
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">Colección de Espacios</h2>
+        <p class="section-desc">Seleccione el espacio ejecutivo que se adapte a su agenda y configure su reserva en segundos.</p>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <button class="btn btn-secondary btn-sm" onclick="resetFilters()">Mostrar Todos</button>
+      </div>
+    </div>
+
+    <!-- Catalog Dynamic Grid -->
+    <div class="spaces-grid" id="spacesGrid"></div>
+  </section>
+
   <!-- Interactive 2D Floor Plan (Architectural Blueprint) Section -->
-  <section class="container" id="croquis">
+  <section class="container" id="croquis" style="padding-top: 40px;">
     <div class="section-header">
       <div>
         <h2 class="section-title">Plano Arquitectónico de Instalaciones</h2>
-        <p class="section-desc">Seleccione cualquier sala en el croquis para consultar su calendario de disponibilidad en tiempo real.</p>
+        <p class="section-desc">Haga clic en cualquier sala en el croquis 2D para consultar su calendario de disponibilidad en tiempo real.</p>
       </div>
       <div class="floorplan-legend">
         <div class="legend-item"><span class="legend-indicator ind-available"></span> Sala Disponible</div>
@@ -222,19 +238,6 @@
         <div id="fpPreviewDrawer" class="fp-preview-drawer"></div>
       </div>
     </div>
-  </section>
-
-  <!-- Spaces Catalog Section -->
-  <section class="container" id="catalogo">
-    <div class="section-header">
-      <div>
-        <h2 class="section-title">Colección de Espacios</h2>
-        <p class="section-desc">Seleccione el espacio que se adapte al momento de su empresa y confirme su reserva en segundos.</p>
-      </div>
-    </div>
-
-    <!-- Catalog Dynamic Grid -->
-    <div class="spaces-grid" id="spacesGrid"></div>
   </section>
 
   <!-- MULTI-STEP BOOKING & PAYMENT MODAL -->

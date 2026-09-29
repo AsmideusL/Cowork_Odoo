@@ -116,9 +116,10 @@ document.addEventListener("DOMContentLoaded", () => {
       return `
         <div class="sla-item-card" style="background: rgba(36, 29, 25, 0.45); border: 1px solid rgba(212, 163, 115, 0.2); border-radius: 14px; padding: 20px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 18px;">
           <div style="display: flex; align-items: center; gap: 18px;">
-            <img src="${item.sinpeVoucherUrl || 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=600&q=80'}" 
+            <img src="${item.sinpeVoucherUrl || 'assets/voucher_bac.svg'}" 
+                 onerror="this.src='assets/voucher_bac.svg'"
                  class="voucher-thumb" 
-                 onclick="openVoucherModal('${item.id}', '${item.sinpeVoucherUrl}')" 
+                 onclick="openVoucherModal('${item.id}', '${item.sinpeVoucherUrl || 'assets/voucher_bac.svg'}')" 
                  title="Haga clic para ampliar comprobante">
             <div>
               <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
@@ -156,11 +157,12 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!booking) return;
 
     const modal = document.getElementById("voucherModal");
-    document.getElementById("modalVoucherImg").src = voucherUrl || "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=600&q=80";
+    const safeVoucher = voucherUrl || "assets/voucher_bac.svg";
+    document.getElementById("modalVoucherImg").src = safeVoucher;
     document.getElementById("modalVoucherDetails").innerHTML = `
       <h3 style="color: #FFF; margin-bottom: 8px;">Comprobante de Reserva ${booking.id}</h3>
       <p style="color: #B8A99A; font-size: 0.9rem; margin-bottom: 4px;"><strong>Socio:</strong> ${booking.clientName} (${booking.clientPhone})</p>
-      <p style="color: #B8A99A; font-size: 0.9rem; margin-bottom: 4px;"><strong>Referencia Bancaria:</strong> ${booking.sinpeRef}</p>
+      <p style="color: #B8A99A; font-size: 0.9rem; margin-bottom: 4px;"><strong>Referencia Bancaria:</strong> ${booking.sinpeRef || 'SINPE-DEMO'}</p>
       <p style="color: #B8A99A; font-size: 0.9rem; margin-bottom: 4px;"><strong>Monto esperado:</strong> ₡${booking.totalCRC.toLocaleString()}</p>
       <p style="color: #B8A99A; font-size: 0.9rem; margin-bottom: 18px;"><strong>Sala solicitada:</strong> ${booking.spaceName}</p>
       <div style="display: flex; gap: 10px;">
@@ -182,7 +184,7 @@ document.addEventListener("DOMContentLoaded", () => {
       target.status = "confirmed";
       NexusStorage.saveBookings(bookings);
       initAdminDashboard();
-      showToast(`✓ Pago SINPE de la reserva ${bookingId} validado. Factura electrónica generada en Odoo.`, "success");
+      showToast(`✓ Pago SINPE de la reserva ${bookingId} validado. Factura electrónica emitida exitosamente.`, "success");
     }
   };
 

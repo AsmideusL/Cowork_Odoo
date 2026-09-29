@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="100%" height="100%">
+  <defs>
+    <linearGradient id="podBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#181513"/>
+      <stop offset="100%" stop-color="#0E0C0B"/>
+    </linearGradient>
+    <linearGradient id="feltGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#3A3029"/>
+      <stop offset="100%" stop-color="#241E1A"/>
+    </linearGradient>
+    <radialGradient id="ringLight" cx="50%" cy="50%" r="50%">
+      <stop offset="85%" stop-color="#FDFBF7" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#E9C46A" stop-opacity="0.1"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="800" height="500" fill="url(#podBg)"/>
+
+  <!-- Pod Rounded Exterior Capsule -->
+  <rect x="220" y="30" width="360" height="430" rx="35" fill="url(#feltGrad)" stroke="#D4A373" stroke-width="2.5"/>
+
+  <!-- Double Acoustic Glass Door (Frameless) -->
+  <rect x="250" y="55" width="300" height="380" rx="25" fill="#14100E" stroke="rgba(224,196,172,0.3)" stroke-width="1.5"/>
+  <rect x="260" y="65" width="280" height="360" rx="20" fill="rgba(212,163,115,0.06)"/>
+
+  <!-- Acoustic Felt Honeycomb Wall Inside -->
+  <g fill="none" stroke="rgba(212,163,115,0.12)" stroke-width="1.5">
+    <polygon points="360,110 385,125 385,155 360,170 335,155 335,125"/>
+    <polygon points="410,110 435,125 435,155 410,170 385,155 385,125"/>
+    <polygon points="460,110 485,125 485,155 460,170 435,155 435,125"/>
+    <polygon points="385,155 410,170 410,200 385,215 360,200 360,170"/>
+    <polygon points="435,155 460,170 460,200 435,215 410,200 410,170"/>
+  </g>
+
+  <!-- Adjustable LED Studio Ring Light -->
+  <circle cx="400" cy="140" r="42" fill="none" stroke="#F4E2D0" stroke-width="8" filter="drop-shadow(0 0 16px #E9C46A)"/>
+  <circle cx="400" cy="140" r="34" fill="#1A1512"/>
+
+  <!-- Compact Oak Floating Desk -->
+  <rect x="290" y="270" width="220" height="24" rx="6" fill="#8E4F32" stroke="#D4A373" stroke-width="1.5"/>
+  
+  <!-- Qi Fast Wireless Charger Pad with Phone -->
+  <ellipse cx="330" cy="282" rx="14" ry="5" fill="#14100E" stroke="#819870" stroke-width="1"/>
+  <rect x="323" y="276" width="14" height="12" rx="2" fill="#241B16"/>
+
+  <!-- Ergonomic Swivel Stool -->
+  <ellipse cx="400" cy="360" rx="45" ry="16" fill="#E07A5F" stroke="#F4E2D0" stroke-width="1.5"/>
+  <line x1="400" y1="375" x2="400" y2="425" stroke="#D4A373" stroke-width="5"/>
+  <line x1="365" y1="425" x2="435" y2="425" stroke="#D4A373" stroke-width="5"/>
+
+  <!-- Soundproof & Ventilation Indicators -->
+  <g fill="#819870" font-family="'Plus Jakarta Sans', sans-serif" font-size="11" font-weight="700">
+    <text x="400" y="240" text-anchor="middle">🔇 Insonorización -35dB</text>
+    <text x="400" y="315" fill="#D4A373" text-anchor="middle" font-size="9.5">Ventilación &amp; Filtrado Activo</text>
+  </g>
+
+  <!-- Outdoor Plant Silhouette -->
+  <path d="M 120,440 Q 150,300 130,220 Q 180,310 160,440 Z" fill="#2B3624" opacity="0.8"/>
+  <path d="M 680,440 Q 650,320 670,240 Q 620,330 640,440 Z" fill="#2B3624" opacity="0.8"/>
+
+  <!-- Badge Overlay -->
+  <rect x="580" y="445" width="195" height="35" rx="17" fill="rgba(26,21,18,0.92)" stroke="#819870" stroke-width="1.5"/>
+  <text x="677" y="468" fill="#F4E2D0" font-family="'Plus Jakarta Sans', sans-serif" font-size="12" font-weight="700" text-anchor="middle">🎙️ Cabina Focus · 1 Pax</text>
+</svg>
