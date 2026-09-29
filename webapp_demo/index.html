@@ -335,7 +335,7 @@
 
             <div class="field-group" style="margin-bottom: 14px;">
               <label class="field-label">Número de Referencia SINPE *</label>
-              <input type="text" id="sinpeRefInput" class="field-input" placeholder="ej. SINPE-992104-BN" value="SINPE-992104-BN">
+              <input type="text" id="sinpeRefInput" class="field-input" placeholder="ej. SINPE-992104-BN">
             </div>
 
             <div class="field-group" style="margin-bottom: 12px;">
@@ -345,7 +345,7 @@
                 <div id="sinpeUploadLabel">
                   <div style="font-size: 2rem; margin-bottom: 6px;">📎</div>
                   <div style="color: #FFF; font-weight: 600; font-size: 0.94rem;">Haga clic o arrastre el comprobante digital</div>
-                  <div style="font-size: 0.78rem; color: #B8A99A;">Formatos permitidos: PNG, JPG, PDF (Máx 5MB)</div>
+                  <div style="font-size: 0.78rem; color: #B8A99A;">Formatos permitidos: PNG, JPG (se optimiza automáticamente) o PDF (máx. 1.5 MB)</div>
                 </div>
               </label>
 
@@ -361,20 +361,20 @@
           <div id="cardContainer" style="display: none; background: rgba(36,29,25,0.45); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 22px; margin-bottom: 22px;">
             <div class="field-group" style="margin-bottom: 14px;">
               <label class="field-label">Número de Tarjeta</label>
-              <input type="text" class="field-input" placeholder="•••• •••• •••• 4242" value="4000 1234 5678 4242">
+              <input type="text" id="cardNumber" class="field-input" inputmode="numeric" autocomplete="cc-number" placeholder="•••• •••• •••• 4242" value="4242 4242 4242 4242">
             </div>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
               <div class="field-group">
                 <label class="field-label">Vencimiento</label>
-                <input type="text" class="field-input" placeholder="MM/AA" value="12/28">
+                <input type="text" id="cardExp" class="field-input" autocomplete="cc-exp" placeholder="MM/AA" value="12/28">
               </div>
               <div class="field-group">
                 <label class="field-label">CVC / Código de Seguridad</label>
-                <input type="password" class="field-input" placeholder="123" value="888">
+                <input type="password" id="cardCvc" class="field-input" inputmode="numeric" autocomplete="cc-csc" placeholder="123" value="888">
               </div>
             </div>
             <div style="margin-top: 14px; font-size: 0.78rem; color: var(--sage-green);">
-              🔒 Conexión cifrada SSL con pasarela de pago autorizada.
+              🔒 Demo: cobro simulado (sin pasarela real). Se valida el formato de la tarjeta.
             </div>
           </div>
 

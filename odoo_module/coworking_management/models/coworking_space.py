@@ -58,7 +58,7 @@ class CoworkingSpace(models.Model):
             'type': 'ir.actions.act_window',
             'name': f'Calendario: {self.name}',
             'res_model': 'coworking.booking',
-            'view_mode': 'calendar,tree,form',
+            'view_mode': 'calendar,list,form',
             'domain': [('space_id', '=', self.id)],
             'context': {
                 'default_space_id': self.id,

@@ -18,6 +18,7 @@ Coworking/
 │   │   ├── app.js                      # Motor interactivo de cliente y reservas
 │   │   ├── admin.js                    # Motor administrativo, temporizadores SLA y analíticas
 │   │   └── mock_data.js                # Base de datos interactiva (Local Storage)
+│   ├── _headers                        # Encabezados de seguridad (Netlify, incluso con Drop)
 │   ├── netlify.toml                    # Configuración para despliegue en Netlify con 1 clic
 │   └── README.md                       # Guía de uso y despliegue rápido
 │
@@ -27,7 +28,7 @@ Coworking/
     │   ├── models/                     # Espacios, Reservas con SLA, Addons y Clientes
     │   ├── views/                      # Calendario visual, Formularios, Kanban, Reportes
     │   ├── security/                   # Permisos de Operador y Administrador
-    │   ├── controllers/                # Endpoints de disponibilidad y reservas web
+    │   ├── controllers/                # Catálogo web, reserva y API de disponibilidad
     │   └── data/                       # Espacios demo y plantillas de correo con QR
     ├── coworking_management_odoo19.zip # Instalador comprimido para Odoo
     └── README.md                       # Manual técnico de instalación en Odoo 19
@@ -41,4 +42,4 @@ Coworking/
    * Abre `webapp_demo/index.html` en cualquier navegador web para probarlo localmente.
    * O arrastra la carpeta `webapp_demo` en [Netlify Drop](https://app.netlify.com/drop) para tenerlo en línea con URL pública en 30 segundos.
 2. **Para la Implementación en el Servidor Odoo 19:**
-   * Toma el archivo `odoo_module/coworking_management_odoo19.zip` y sigue los pasos detallados en [odoo_module/README.md](file:///c:/Users/FRT/OneDrive%20-%20Flowing%20Rivers%20Technologies/Escritorio/Proyectos%20Clientes/Coworking/odoo_module/README.md).
+   * Toma el archivo `odoo_module/coworking_management_odoo19.zip` y sigue los pasos detallados en [odoo_module/README.md](odoo_module/README.md) (requiere Odoo 19 auto-hospedado u Odoo.sh).

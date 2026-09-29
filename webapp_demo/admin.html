@@ -6,7 +6,7 @@
   <title>Panel Concierge &amp; SLA | NEXUS Private Spaces</title>
   <meta name="description" content="Centro de control administrativo y gerencial para coworking: validación de pagos SINPE con SLA, gestión de calendarios por sala y analíticas de ocupación.">
   <link rel="stylesheet" href="css/style.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
 </head>
 <body style="background-color: var(--bg-dark);">
 
@@ -52,14 +52,14 @@
     <!-- Top KPI Matrix -->
     <div class="kpi-grid">
       <div class="kpi-card">
-        <div class="kpi-label">Reservas Totales</div>
+        <div class="kpi-label">Reservas Activas</div>
         <div class="kpi-value" id="kpiTotalBookings">0</div>
-        <div class="kpi-trend">↑ +14% vs semana anterior</div>
+        <div class="kpi-trend" id="kpiTotalBookingsNote">—</div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-label">Ingresos del Mes</div>
+        <div class="kpi-label">Ingresos Confirmados</div>
         <div class="kpi-value" id="kpiTotalRevenue">₡0</div>
-        <div class="kpi-trend">↑ 104% cumplimiento de meta</div>
+        <div class="kpi-trend">Reservas pagadas y reprogramadas</div>
       </div>
       <div class="kpi-card amber">
         <div class="kpi-label">Pendientes SINPE</div>
@@ -68,13 +68,13 @@
       </div>
       <div class="kpi-card rose">
         <div class="kpi-label">Tasa de Ocupación</div>
-        <div class="kpi-value" id="kpiOccupancyRate">86%</div>
-        <div class="kpi-trend">Salas ejecutivas en alta demanda</div>
+        <div class="kpi-value" id="kpiOccupancyRate">0%</div>
+        <div class="kpi-trend">Hoy, franja 08:00 – 20:00</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-label">Tiempo Promedio SLA</div>
-        <div class="kpi-value" id="kpiAvgSla" style="color: var(--terracotta);">7.4 min</div>
-        <div style="font-size: 0.76rem; color: var(--sage-green);">✓ Objetivo &lt; 15 min cumplido</div>
+        <div class="kpi-value" id="kpiAvgSla" style="color: var(--terracotta);">—</div>
+        <div id="kpiAvgSlaNote" style="font-size: 0.76rem; color: var(--sage-green);">Objetivo &lt; 15 min</div>
       </div>
     </div>
 
@@ -254,7 +254,8 @@
       </div>
       <div class="modal-body">
         <div style="text-align: center; margin-bottom: 18px;">
-          <img id="modalVoucherImg" src="" style="max-width: 100%; max-height: 400px; border-radius: 10px; border: 1px solid var(--border-subtle); object-fit: contain; box-shadow: var(--shadow-lg);">
+          <img id="modalVoucherImg" src="" alt="Comprobante SINPE" style="max-width: 100%; max-height: 400px; border-radius: 10px; border: 1px solid var(--border-subtle); object-fit: contain; box-shadow: var(--shadow-lg);">
+          <div id="modalVoucherPdf" style="display: none;"></div>
         </div>
         <div id="modalVoucherDetails">
           <!-- Dynamic details -->

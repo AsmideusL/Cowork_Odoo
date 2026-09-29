@@ -1,5 +1,9 @@
+# Despliegue desde la raíz del repositorio (Git): publica la carpeta del demo.
 [build]
   publish = "webapp_demo"
 
 [build.environment]
   NETLIFY_DRAWER_DISABLED = "true"
+
+# Los encabezados de seguridad están en webapp_demo/_headers para que apliquen
+# tanto en despliegue por Git como al arrastrar la carpeta en Netlify Drop.

@@ -10,13 +10,13 @@ Prototipo interactivo de alta fidelidad para el sistema de reserva y administrac
    * Vista de croquis con zonas reactivas (verde = disponible, rojo = ocupado).
    * Al hacer clic en cualquier sala del plano, se abre directamente el flujo de reserva.
 2. **Calendario Dinámico e Individual por Sala:**
-   * Franjas horarias en tiempo real por horas, días o mensual.
-   * Detección de horarios ya ocupados para prevenir *double-booking*.
+   * Franjas horarias por horas (bloques continuos de varias horas), días consecutivos o planes mensuales.
+   * Detección de horarios ya ocupados para prevenir *double-booking* (también al reprogramar y en bloqueos manuales).
 3. **Flujo de Pago Mixto:**
    * **Tarjeta de Crédito / Débito:** Simulación instantánea con emisión de recibo.
    * **SINPE Móvil (Costa Rica):** Muestra teléfono oficial (8888-6398), titular, monto a pagar, solicitud de número de referencia y carga de archivo de comprobante digital.
 4. **Bandeja de Aprobación de SINPE con SLA (Admin):**
-   * Monitoreo de tiempo transcurrido (Verde &lt; 10 min, Amarillo &lt; 20 min, Rojo &gt; 20 min).
+   * Monitoreo de tiempo transcurrido (Verde &lt; 15 min, Amarillo 15–30 min, Rojo &gt; 30 min), igual que en Odoo.
    * Modal de inspección de comprobante con zoom.
    * Aprobación con 1 clic (emite factura electrónica simulada) o rechazo con motivo para el cliente.
 5. **Generador de Pase Digital de Acceso con Código QR:**
@@ -24,8 +24,7 @@ Prototipo interactivo de alta fidelidad para el sistema de reserva y administrac
 6. **Portal del Cliente ("Mis Reservas"):**
    * Historial de reservas y herramienta de **Reprogramación de Fecha/Hora** sujeta a disponibilidad.
 7. **Panel Gerencial con Informes & Gráficos (Chart.js):**
-   * Gráfico de barras de salas más demandadas.
-   * Gráfico de dona de distribución de ingresos (horas vs días vs meses).
+   * KPIs, gráfico de salas más demandadas y mezcla de ingresos calculados a partir de las reservas reales del demo.
    * Ranking de clientes frecuentes con identificación y horas acumuladas.
 
 ---
@@ -54,3 +53,13 @@ Puedes alojar este demo gratuitamente en [Netlify](https://www.netlify.com/) en 
 No requiere instalar Node.js ni bases de datos para el demo:
 * Simplemente haz doble clic en `webapp_demo/index.html` para abrirlo en tu navegador favorito (Chrome, Edge, Safari).
 * Para acceder al panel de administración, haz clic en el botón superior **"⚡ Panel Admin & SLA"** o abre directamente `webapp_demo/admin.html`.
+
+---
+
+## ℹ️ Notas del Demo
+
+* **Datos de ejemplo:** las reservas de muestra usan fechas relativas a *hoy* y se vuelven a sembrar automáticamente una vez por día, así el demo siempre se ve vigente. Las reservas creadas durante una presentación se conservan hasta el día siguiente.
+* **Almacenamiento:** todo vive en el `localStorage` del navegador (no hay servidor). Las fotos de comprobantes se optimizan automáticamente; los PDF se aceptan hasta 1.5 MB.
+* **Acceso Gerencia:** `admin@nexusspaces.com` / `admin123`. La protección del panel es solo de interfaz (demo); en producción el control de acceso lo realiza Odoo.
+* **Pagos:** el cobro con tarjeta es simulado (se valida el formato de la tarjeta) y la factura electrónica también.
+* **Varias pestañas:** el portal y el panel admin se sincronizan en vivo si se abren en el mismo navegador.

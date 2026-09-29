@@ -97,5 +97,30 @@
             <field name="state">available</field>
             <field name="description">Área abierta colaborativa con acceso ilimitado a barra de café y terraza lounge.</field>
         </record>
+        <record id="space_creative" model="coworking.space">
+            <field name="name">Creative Studio Lab</field>
+            <field name="code">LAB-CREATIVE</field>
+            <field name="space_type">workshop</field>
+            <field name="capacity">18</field>
+            <field name="floor_location">Piso 4 - Estudio Creativo</field>
+            <field name="price_hour">18000.0</field>
+            <field name="price_day">110000.0</field>
+            <field name="price_month">1400000.0</field>
+            <field name="state">available</field>
+            <field name="description">Espacio modular para Design Thinking y workshops: muros de vidrio escribible y proyector láser de tiro corto.</field>
+            <field name="addon_ids" eval="[(6, 0, [ref('addon_catering'), ref('addon_projector'), ref('addon_tech')])]"/>
+        </record>
+
+        <!-- Refresco periódico del semáforo SLA de comprobantes SINPE pendientes -->
+        <record id="ir_cron_coworking_refresh_sla" model="ir.cron" forcecreate="True">
+            <field name="name">Coworking: Actualizar SLA SINPE</field>
+            <field name="model_id" ref="model_coworking_booking"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_refresh_sla()</field>
+            <field name="user_id" ref="base.user_root"/>
+            <field name="interval_number">5</field>
+            <field name="interval_type">minutes</field>
+            <field name="active" eval="True"/>
+        </record>
     </data>
 </odoo>

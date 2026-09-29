@@ -2,6 +2,7 @@
 <odoo>
     <!-- Root Menu -->
     <menuitem id="menu_coworking_root"
+              groups="coworking_management.group_coworking_user"
               name="Coworking &amp; Espacios"
               web_icon="coworking_management,static/description/icon.png"
               sequence="20"/>

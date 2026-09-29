@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Catálogo público de espacios: /coworking -->
+    <template id="website_spaces_catalog" name="Coworking: Catálogo de Espacios">
+        <t t-call="website.layout">
+            <div id="wrap" class="oe_structure">
+                <section class="container py-5">
+                    <h1 class="mb-2">Espacios &amp; Oficinas</h1>
+                    <p class="text-muted mb-4">Reserve salas ejecutivas, oficinas privadas y cabinas por horas, días o mensualidad.</p>
+                    <div t-if="not spaces" class="alert alert-info">Por el momento no hay espacios disponibles para reservar.</div>
+                    <div class="row g-4">
+                        <div t-foreach="spaces" t-as="space" class="col-md-6 col-lg-4">
+                            <div class="card h-100 shadow-sm">
+                                <img t-if="space.image_1920" t-att-src="'/web/image/coworking.space/%s/image_1024' % space.id"
+                                     class="card-img-top" style="object-fit: cover; height: 200px;" t-att-alt="space.name"/>
+                                <div class="card-body d-flex flex-column">
+                                    <h5 class="card-title" t-out="space.name"/>
+                                    <p class="small text-muted mb-2">
+                                        <t t-out="dict(space._fields['space_type'].selection).get(space.space_type)"/> ·
+                                        <t t-out="space.capacity"/> personas ·
+                                        <t t-out="space.floor_location or ''"/>
+                                    </p>
+                                    <p class="card-text small" t-out="space.description or ''"/>
+                                    <ul class="list-unstyled small mb-3">
+                                        <li>Por hora: <strong t-out="space.price_hour" t-options="{'widget': 'monetary', 'display_currency': space.currency_id}"/></li>
+                                        <li>Por día: <strong t-out="space.price_day" t-options="{'widget': 'monetary', 'display_currency': space.currency_id}"/></li>
+                                        <li>Mensual: <strong t-out="space.price_month" t-options="{'widget': 'monetary', 'display_currency': space.currency_id}"/></li>
+                                    </ul>
+                                    <a t-att-href="'/coworking/book/%s' % space.id" class="btn btn-primary mt-auto">Reservar</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </t>
+    </template>
+
+    <!-- Formulario de reserva: /coworking/book/<id> -->
+    <template id="website_booking_form" name="Coworking: Formulario de Reserva">
+        <t t-call="website.layout">
+            <div id="wrap">
+                <section class="container py-5" style="max-width: 760px;">
+                    <a href="/coworking" class="small">&#8592; Volver al catálogo</a>
+                    <h1 class="mt-2 mb-1">Reservar: <t t-out="space.name"/></h1>
+                    <p class="text-muted">Capacidad máxima: <t t-out="space.capacity"/> personas · <t t-out="space.floor_location or ''"/></p>
+
+                    <div t-if="error" class="alert alert-danger" t-out="error"/>
+
+                    <form action="/coworking/book/submit" method="post" enctype="multipart/form-data" class="card card-body shadow-sm">
+                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                        <input type="hidden" name="space_id" t-att-value="space.id"/>
+
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Modalidad</label>
+                                <select name="booking_type" class="form-select">
+                                    <option value="hour">Por horas</option>
+                                    <option value="day">Por días</option>
+                                    <option value="month">Mensual</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Inicio</label>
+                                <input type="datetime-local" name="date_start" class="form-control" required="required"/>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Fin</label>
+                                <input type="datetime-local" name="date_end" class="form-control" required="required"/>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Asistentes</label>
+                                <input type="number" name="attendees" min="1" t-att-max="space.capacity" value="1" class="form-control"/>
+                            </div>
+                        </div>
+
+                        <div t-if="addons" class="mt-4">
+                            <label class="form-label d-block">Servicios adicionales</label>
+                            <div t-foreach="addons" t-as="addon" class="form-check">
+                                <input class="form-check-input" type="checkbox" name="addon_ids" t-att-value="addon.id" t-att-id="'addon_%s' % addon.id"/>
+                                <label class="form-check-label" t-att-for="'addon_%s' % addon.id">
+                                    <t t-out="addon.icon or ''"/> <t t-out="addon.name"/> —
+                                    <t t-out="addon.price" t-options="{'widget': 'monetary', 'display_currency': addon.currency_id}"/>
+                                    (<t t-out="dict(addon._fields['billing_unit'].selection).get(addon.billing_unit)"/>)
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <label class="form-label d-block">Método de pago</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="payment_method" value="sinpe" id="pm_sinpe" checked="checked"/>
+                                <label class="form-check-label" for="pm_sinpe">SINPE Móvil (validación en máximo 30 min)</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="payment_method" value="transfer" id="pm_transfer"/>
+                                <label class="form-check-label" for="pm_transfer">Transferencia bancaria (confirmación manual)</label>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mt-1">
+                            <div class="col-md-6">
+                                <label class="form-label">Referencia SINPE</label>
+                                <input type="text" name="sinpe_reference" class="form-control" placeholder="Número de comprobante"/>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Comprobante (imagen o PDF, máx. 5 MB)</label>
+                                <input type="file" name="sinpe_voucher" accept="image/*,.pdf" class="form-control"/>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-lg mt-4">Enviar reserva</button>
+                        <p class="small text-muted mt-2 mb-0">El monto final (con descuentos de fidelidad) se muestra en la confirmación y en la factura.</p>
+                    </form>
+                </section>
+            </div>
+        </t>
+    </template>
+
+    <!-- Página de confirmación: /coworking/booking/success/<id> -->
+    <template id="website_booking_success" name="Coworking: Reserva Registrada">
+        <t t-call="website.layout">
+            <div id="wrap">
+                <section class="container py-5 text-center" style="max-width: 640px;">
+                    <h1 class="mb-3">¡Reserva registrada!</h1>
+                    <p class="lead">Código: <strong t-out="booking.name"/></p>
+                    <div class="card card-body text-start shadow-sm">
+                        <p class="mb-1"><strong>Espacio:</strong> <t t-out="booking.space_id.name"/></p>
+                        <p class="mb-1"><strong>Inicio:</strong> <t t-out="booking.date_start" t-options="{'widget': 'datetime', 'tz_name': tz}"/></p>
+                        <p class="mb-1"><strong>Fin:</strong> <t t-out="booking.date_end" t-options="{'widget': 'datetime', 'tz_name': tz}"/></p>
+                        <p class="mb-1"><strong>Total:</strong> <t t-out="booking.amount_total" t-options="{'widget': 'monetary', 'display_currency': booking.currency_id}"/></p>
+                        <p class="mb-0"><strong>Estado:</strong> <t t-out="dict(booking._fields['state'].selection).get(booking.state)"/></p>
+                    </div>
+                    <div t-if="booking.state == 'pending_sinpe'" class="alert alert-warning mt-4">
+                        Estamos validando su comprobante SINPE. Recibirá la confirmación y su pase de acceso por correo en máximo 30 minutos.
+                    </div>
+                    <div t-elif="booking.state == 'draft'" class="alert alert-info mt-4">
+                        Su reserva quedó registrada y será confirmada cuando se verifique el pago.
+                    </div>
+                    <a href="/coworking" class="btn btn-secondary mt-3">Volver al catálogo</a>
+                </section>
+            </div>
+        </t>
+    </template>
+    <!-- Enlace en el menú principal del sitio web -->
+    <record id="website_menu_coworking" model="website.menu">
+        <field name="name">Coworking</field>
+        <field name="url">/coworking</field>
+        <field name="parent_id" ref="website.main_menu"/>
+        <field name="sequence">55</field>
+    </record>
+</odoo>

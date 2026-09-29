@@ -67,14 +67,24 @@
                     
                     <button name="action_reject_sinpe" type="object" 
                             string="Rechazar Comprobante" class="btn-danger" 
-                            invisible="state != 'pending_sinpe'"/>
+                            invisible="state != 'pending_sinpe'"
+                            confirm="¿Rechazar el comprobante y cancelar la reserva? Se notificará al cliente (incluya el motivo en la pestaña de pago)."/>
+
+                    <button name="action_confirm_payment" type="object"
+                            string="✓ Confirmar Pago Verificado &amp; Facturar" class="btn-primary"
+                            invisible="state != 'draft' or payment_method == 'sinpe'"
+                            groups="coworking_management.group_coworking_manager"/>
+
+                    <button name="action_cancel" type="object" string="Cancelar Reserva"
+                            invisible="state in ('done', 'cancelled')"
+                            confirm="¿Cancelar esta reserva y liberar el espacio?"/>
 
                     <field name="state" widget="statusbar" statusbar_visible="draft,pending_sinpe,confirmed,done"/>
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
                         <field name="invoice_id" invisible="1"/>
-                        <button name="%(account.action_move_out_invoice_type)d" type="action" 
+                        <button name="action_view_invoice" type="object" 
                                 class="oe_stat_button" icon="fa-pencil-square-o" 
                                 invisible="not invoice_id">
                             <span class="o_stat_text">Factura Generada</span>
@@ -94,6 +104,8 @@
                             <field name="partner_email"/>
                             <field name="space_id"/>
                             <field name="booking_type"/>
+                            <field name="attendees"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
                         </group>
                         <group string="Programación y Horarios">
                             <field name="date_start"/>
@@ -117,10 +129,12 @@
                                            decoration-danger="sla_status == 'breached'"/>
                                 </group>
                                 <group string="Comprobante Bancario Adjunto">
-                                    <field name="sinpe_voucher" widget="image" class="oe_avatar" options="{'size': [200, 200]}"/>
                                     <field name="sinpe_voucher_filename" invisible="1"/>
+                                    <field name="sinpe_voucher" filename="sinpe_voucher_filename"/>
                                     <field name="approved_by_id"/>
                                     <field name="approval_date"/>
+                                    <field name="reject_reason" invisible="state not in ('pending_sinpe', 'cancelled')"
+                                           placeholder="Motivo que verá el cliente si se rechaza el comprobante..."/>
                                 </group>
                             </group>
                         </page>
