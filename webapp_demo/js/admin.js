@@ -1,15 +1,23 @@
 // NEXUS COWORKING - EXECUTIVE CONCIERGE & ADMIN DASHBOARD LOGIC (ENTERPRISE EDITION)
-document.addEventListener("DOMContentLoaded", () => {
-  let activeCalendarSpaceId = "all";
-  let bookings = NexusStorage.getBookings();
-  let spaces = NexusStorage.getSpaces();
+var activeCalendarSpaceId = "all";
+var bookings = [];
+var spaces = [];
 
-  // Initialize
+function initNexusAdmin() {
+  bookings = NexusStorage.getBookings();
+  spaces = NexusStorage.getSpaces();
   initAdminDashboard();
   setupAdminTabs();
   setupAdminFilters();
   startSlaTimers();
   initAdminNotificationBell();
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initNexusAdmin);
+} else {
+  initNexusAdmin();
+}
 
   function initAdminDashboard() {
     bookings = NexusStorage.getBookings();
@@ -728,4 +736,3 @@ document.addEventListener("DOMContentLoaded", () => {
       window.location.href = "index.html";
     }, 350);
   };
-});

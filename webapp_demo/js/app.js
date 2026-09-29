@@ -1,22 +1,30 @@
 // NEXUS COWORKING - FRONTEND CLIENT APPLICATION LOGIC (ENTERPRISE DEMO SUITE)
-document.addEventListener("DOMContentLoaded", () => {
-  let currentFilterType = "hour";
-  let selectedSpace = null;
-  let selectedDate = new Date().toISOString().split("T")[0];
-  let selectedTimeSlot = null;
-  let selectedDaysCount = 1;
-  let selectedMonthPlan = 1;
-  let selectedAddons = new Set();
-  let currentUser = NexusStorage.getCurrentUser();
-  let currentRole = NexusStorage.getAuthRole();
+var currentFilterType = "hour";
+var selectedSpace = null;
+var selectedDate = new Date().toISOString().split("T")[0];
+var selectedTimeSlot = null;
+var selectedDaysCount = 1;
+var selectedMonthPlan = 1;
+var selectedAddons = new Set();
+var currentUser = null;
+var currentRole = null;
 
-  // Initialize UI
+function initNexusApp() {
+  currentUser = NexusStorage.getCurrentUser();
+  currentRole = NexusStorage.getAuthRole();
   initUserBadge();
   initNotificationBell();
   renderSpacesCatalog();
   setupFloorPlanInteractions();
   setupSearchEvents();
   setupClientPortalEvents();
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initNexusApp);
+} else {
+  initNexusApp();
+}
 
   // Sync user display in navbar & Admin indicator
   function initUserBadge() {
@@ -1237,4 +1245,3 @@ document.addEventListener("DOMContentLoaded", () => {
       toast.remove();
     }, 4200);
   };
-});
